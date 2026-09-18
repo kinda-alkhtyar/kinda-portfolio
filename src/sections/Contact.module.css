@@ -1,0 +1,153 @@
+.contact {
+  background:
+    radial-gradient(ellipse at 28% 70%, #681b121c, transparent 48%),
+    #080707;
+  color: #f3ede2;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  align-items: center;
+  gap: 64px;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 64px 40px 96px;
+}
+
+.sword {
+  position: relative;
+  width: min(100%, 180px);
+  aspect-ratio: 9 / 11;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.swordImage,
+.pedestalImage {
+  position: absolute;
+  display: block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.swordImage {
+  top: 0;
+  width: auto;
+  height: 70%;
+}
+
+.pedestalImage {
+  bottom: 0;
+  width: 100%;
+  height: auto;
+}
+
+.content {
+  min-width: 0;
+}
+
+.bladeGlow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 70%;
+  width: auto;
+  aspect-ratio: 2 / 3;
+  overflow: visible;
+  transform: translateX(-50%);
+  pointer-events: none;
+  fill: #ff4038;
+}
+
+.tightGlow {
+  opacity: 0.16;
+  filter: blur(14px);
+}
+
+.settleFlash {
+  opacity: 0;
+  filter: blur(18px);
+}
+
+.hoverLight {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: #ff9a7d;
+  filter: drop-shadow(0 0 4px #ed443c);
+}
+
+.title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(32px, 4.5vw, 56px);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.title span {
+  display: block;
+}
+
+.subtitle {
+  margin: 20px 0 28px;
+  color: #b9b2a9;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.button {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 14px 28px;
+  border: 1px solid #b44136;
+  border-radius: 0;
+  background: #481411;
+  color: #fff3e7;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.button:hover {
+  background: #62201a;
+  border-color: #d65a4b;
+  box-shadow: 0 0 16px #b441362e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
+
+.button:disabled {
+  cursor: default;
+}
+
+@media (max-width: 680px) {
+  .container {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    padding: 40px 20px 72px;
+    text-align: center;
+  }
+
+  .sword {
+    width: min(100%, 147px);
+  }
+}

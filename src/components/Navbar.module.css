@@ -1,0 +1,135 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-bottom: -65px;
+  background: #09080759;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border-bottom: 1px solid #b4413626;
+  color: #f3ede2;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.nav {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  max-width: 1440px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 10px 40px;
+}
+
+.logo {
+  position: relative;
+  flex-shrink: 0;
+  padding-right: 6px;
+  color: #f3ede2;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 40px;
+  font-style: italic;
+  letter-spacing: -7px;
+  line-height: 1;
+  text-decoration: none;
+  text-shadow: 2px 2px 0 #785037;
+}
+
+.logoSpace {
+  visibility: hidden;
+}
+
+.logoImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: calc(100% - 6px);
+  height: 100%;
+  object-fit: contain;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  box-sizing: border-box;
+  border-bottom: 1px solid transparent;
+  color: #d6d0c7;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.link[aria-current='page'] {
+  border-bottom-color: #d63332;
+  color: #fff8ef;
+}
+
+.link:hover {
+  color: #fff8ef;
+}
+
+.logo:focus-visible,
+.link:focus-visible {
+  outline: 2px solid #e65a50;
+  outline-offset: 5px;
+}
+
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ed443c;
+  box-shadow: 0 0 0 4px #cf29291a, 0 0 12px #df302f80;
+}
+
+@media (max-width: 680px) {
+  .header {
+    margin-bottom: -113px;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    min-height: 112px;
+    padding: 10px 20px;
+  }
+
+  .links {
+    order: 3;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .availability {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+}

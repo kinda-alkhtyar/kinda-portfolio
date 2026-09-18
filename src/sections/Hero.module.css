@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap');
+
+.hero {
+  background:
+    radial-gradient(ellipse at 78% 58%, #681b121c, transparent 48%),
+    linear-gradient(180deg, #090807, #080707);
+  color: #f3ede2;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  max-width: 1440px;
+  min-height: 640px;
+  margin: 0 auto;
+  padding: 104px 40px 88px;
+}
+
+.content {
+  min-width: 0;
+  max-width: 600px;
+}
+
+.eyebrow {
+  margin: 12px 0 20px;
+  color: #b9b2a9;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  line-height: 1.6;
+  text-transform: none;
+}
+
+.title {
+  position: relative;
+  height: clamp(180px, 19vw, 260px);
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: clamp(48px, 7.5vw, 108px);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.wordmark {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: block;
+  width: clamp(460px, 46vw, 600px);
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+  transform: translateY(-50%);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 14px 24px;
+  border: 1px solid #b44136;
+  background: #481411;
+  color: #fff3e7;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  line-height: 1.5;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.button:hover {
+  background: #62201a;
+  border-color: #d65a4b;
+  box-shadow: 0 0 16px #b441362e;
+}
+
+.button > span {
+  transition: transform 220ms ease;
+}
+
+.button:hover > span {
+  transform: translate(2px, -1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button > span {
+    transition: none;
+  }
+
+  .button:hover > span {
+    transform: none;
+  }
+}
+
+.button:focus-visible {
+  outline: 2px solid #e9bd9f;
+  outline-offset: 5px;
+}
+
+.secondaryButton {
+  border-color: #78695c;
+  background: transparent;
+  color: #f3ede2;
+  text-align: center;
+}
+
+.secondaryButton:hover {
+  border-color: #c4a38b;
+  background: #c4a38b0d;
+}
+
+.swordVisual {
+  --sword-height: clamp(380px, 40vw, 520px);
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  min-height: 480px;
+  pointer-events: none;
+}
+
+.swordVisual::before,
+.swordVisual::after {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  z-index: -1;
+  width: min(100%, 520px);
+  height: calc(var(--sword-height) + 120px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  content: '';
+}
+
+.swordVisual::before {
+  background:
+    radial-gradient(ellipse 12% 9% at 50% 15%, #ff714033, transparent 85%),
+    radial-gradient(ellipse 13% 30% at 50% 57%, #f13b302b, transparent 85%),
+    radial-gradient(ellipse 44% 12% at 50% 91%, #df302f24, transparent 90%),
+    radial-gradient(ellipse 48% 48% at 50% 50%, #53110f40 0%, #23090833 55%, transparent 100%),
+    radial-gradient(ellipse 26% 42% at 50% 44%, #03020299, transparent 100%);
+  filter: blur(12px);
+}
+
+.swordVisual::after {
+  background:
+    linear-gradient(180deg, transparent, #d9955426 45%, #ef542d14 70%, transparent) 18% 12% / 1px 62%,
+    linear-gradient(180deg, transparent, #e4ab681f 38%, transparent) 80% 0 / 2px 75%,
+    linear-gradient(180deg, transparent, #a9553021 55%, transparent) 91% 50% / 1px 48%;
+  background-repeat: no-repeat;
+  filter: blur(1px);
+}
+
+.pedestalImage {
+  position: absolute;
+  top: calc(44% + var(--sword-height) / 2);
+  left: 50%;
+  display: block;
+  width: min(70%, 260px);
+  height: auto;
+  transform: translate(-50%, -28%);
+}
+
+.swordImage {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  display: block;
+  width: auto;
+  height: var(--sword-height);
+  max-width: 100%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 680px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 320px;
+  }
+
+  .container {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    min-height: auto;
+    padding: 145px 20px 64px;
+  }
+
+  .title {
+    height: clamp(128px, 39vw, 240px);
+    font-size: clamp(40px, 12vw, 76px);
+  }
+
+  .eyebrow {
+    font-size: 14px;
+  }
+
+  .swordVisual {
+    --sword-height: 320px;
+    min-height: 320px;
+  }
+
+  .swordVisual::before,
+  .swordVisual::after {
+    top: 50%;
+  }
+
+  .swordImage {
+    top: 50%;
+    height: 320px;
+  }
+
+  .pedestalImage {
+    top: calc(50% + 160px);
+    width: min(65%, 150px);
+  }
+}
