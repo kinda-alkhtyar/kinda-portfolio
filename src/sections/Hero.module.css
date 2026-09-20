@@ -210,11 +210,11 @@
 
 .swordImage {
   position: absolute;
-  top: calc(44% + 22px);
+  top: calc(44% - 24px);
   left: 50%;
   display: block;
-  width: calc(var(--sword-height) * 1.26);
-  height: calc(var(--sword-height) * 1.89);
+  width: calc(var(--sword-height) * 0.67536);
+  height: calc(var(--sword-height) * 1.01304);
   object-fit: contain;
   transform: translate(-50%, -50%);
 }
@@ -347,7 +347,7 @@
   }
 
   .swordImage {
-    top: calc(50% + 22px);
+    top: calc(50% - 24px);
   }
 
   .pedestalImage {

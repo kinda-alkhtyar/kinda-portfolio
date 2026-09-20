@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import Sword3D from '../components/Sword3D'
-import styles from './Hero.module.css'
 import sword from '../assets/sword/ka-sword-with-logo.png'
+import styles from './Hero.module.css'
 import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
 

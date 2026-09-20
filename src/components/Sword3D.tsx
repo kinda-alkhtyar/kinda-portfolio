@@ -1,11 +1,16 @@
-import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Bounds, Center, Clone, Environment, Lightformer, Resize, useGLTF } from '@react-three/drei'
-import { ACESFilmicToneMapping, Mesh, MeshPhysicalMaterial, MeshStandardMaterial } from 'three'
+import { Bounds, Center, Clone, Environment, Lightformer, Resize, useBounds, useGLTF } from '@react-three/drei'
+import { ACESFilmicToneMapping, Box3, Mesh, MeshStandardMaterial, Scene, Vector3 } from 'three'
 import type { Group, Material } from 'three'
 import swordUrl from '../assets/models/Royal_Flameblade_Review.glb?url'
 import { heroSwordMotion } from './heroSwordMotion'
+import { heroSwordRuntime } from './heroSwordRuntime'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export type Sword3DProps = {
   className?: string
@@ -34,6 +39,10 @@ class SwordRenderBoundary extends Component<
     return { failed: true }
   }
 
+  componentDidCatch(error: Error) {
+    console.error('Sword3D failed to render:', error)
+  }
+
   render() {
     return this.state.failed ? this.props.fallback : this.props.children
   }
@@ -54,8 +63,11 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)',
     )
     const hero = canvas.closest<HTMLElement>('#home')
+    const project = hero?.parentElement?.querySelector<HTMLElement>('[data-energy-project]')
+    let checkpoint: gsap.core.Tween | undefined
     const resetCursor = () => {
       cursor.current = { x: 0, y: 0 }
+      heroSwordRuntime.setMouse(0, 0)
     }
     const onPointerMove = (event: PointerEvent) => {
       if (!active.current || event.pointerType !== 'mouse' || !hero) return
@@ -65,18 +77,41 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
         x: Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1)),
         y: Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1)),
       }
+      heroSwordRuntime.setMouse(cursor.current.x, cursor.current.y)
     }
     const update = () => {
+      checkpoint?.scrollTrigger?.kill()
+      checkpoint?.kill()
+      heroSwordRuntime.resetScroll()
       // Touch-capable laptops still qualify when a mouse/trackpad is available.
       active.current = enabled && media.matches
       setFrameloop(active.current ? 'always' : 'demand')
       elapsed.current = 0
+      heroSwordRuntime.setIdle(active.current)
       resetCursor()
       tilt.current = { x: 0, y: 0 }
       if (group.current) {
         group.current.rotation.set(0, 0, 0)
         group.current.position.set(0, 0, 0)
         group.current.scale.setScalar(1)
+      }
+      if (active.current && hero && project) {
+        const travel = { progress: 0 }
+        checkpoint = gsap.to(travel, {
+          progress: 1,
+          ease: 'none',
+          onUpdate: () => heroSwordRuntime.setScroll(travel.progress, true),
+          scrollTrigger: {
+            id: 'hero-sword-project-01-checkpoint',
+            trigger: hero,
+            start: 'top top',
+            endTrigger: project,
+            end: 'top 85%',
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+            onScrubComplete: () => heroSwordRuntime.setScroll(travel.progress, false),
+          },
+        })
       }
       invalidate()
     }
@@ -86,7 +121,12 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     hero?.addEventListener('pointerleave', resetCursor)
     window.addEventListener('blur', resetCursor)
     return () => {
+      checkpoint?.scrollTrigger?.kill()
+      checkpoint?.kill()
+      heroSwordRuntime.resetScroll()
       active.current = false
+      heroSwordRuntime.setIdle(false)
+      heroSwordRuntime.setMouse(0, 0)
       setFrameloop('demand')
       media.removeEventListener('change', update)
       hero?.removeEventListener('pointermove', onPointerMove)
@@ -100,24 +140,48 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     // A 12-second cycle, capped delta prevents jumps after a background tab resumes.
     const step = Math.min(delta, 0.05)
     elapsed.current += step
+    heroSwordRuntime.setIdle(true, elapsed.current)
     const damping = 1 - Math.exp(-4 * step)
     // Cursor tilt is limited to 2 degrees vertically and 3 degrees horizontally.
     tilt.current.x += (cursor.current.y * Math.PI / 90 - tilt.current.x) * damping
     tilt.current.y += (cursor.current.x * Math.PI / 60 - tilt.current.y) * damping
-    group.current.rotation.x = tilt.current.x + heroSwordMotion.tilt
-    group.current.rotation.y = Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y
-    group.current.position.y = heroSwordMotion.lift
-    group.current.position.z = heroSwordMotion.recede * -0.2
-    group.current.scale.setScalar(1 - heroSwordMotion.recede * 0.04)
+    const progress = heroSwordRuntime.state.scrollProgress
+    group.current.rotation.x = tilt.current.x - progress * 0.06
+    group.current.rotation.y = Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y + progress * 0.07
+    group.current.rotation.z = progress * -0.025
+    group.current.position.x = progress * 0.12
+    group.current.position.y = progress * -0.3
   })
 
   return <group ref={group}>{children}</group>
 }
 
+function ModelPlacement({ bounds, children }: { bounds: Box3; children: ReactNode }) {
+  const fit = useBounds()
+  const size = useThree((state) => state.size)
+  const group = useRef<Group>(null)
+  const origin = useMemo(() => new Vector3(), [])
+
+  useLayoutEffect(() => {
+    // Fit the original normalized bounds, so fitting cannot undo the model-only scale.
+    fit.refresh(bounds).fit().clip()
+  }, [fit, bounds, size.width, size.height])
+
+  useFrame(({ camera, viewport, size }) => {
+    if (group.current && size.height > 0) {
+      const worldHeight = viewport.getCurrentViewport(camera, origin).height
+      group.current.position.y = -36 * worldHeight / size.height
+    }
+  })
+
+  return <group ref={group} scale={1.73279925}>{children}</group>
+}
+
 function SwordModel({ idleRotation }: { idleRotation: boolean }) {
   const { scene } = useGLTF(swordUrl)
+  const goldReflectionScene = useMemo(() => new Scene(), [])
   const { model, materials } = useMemo(() => {
-    // Tune private material copies so the cached GLTF stays reusable.
+    // Preserve authored textures and physical properties on private material copies.
     const model = scene.clone(true)
     const materials = new Map<Material, Material>()
     const tuneMaterial = (source: Material) => {
@@ -126,42 +190,23 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       const material = source.clone()
       materials.set(source, material)
 
-      if (material instanceof MeshStandardMaterial) {
-        if (material.name.startsWith('Crystal')) {
-          material.color.set('#aeb7c4')
-          material.metalness = 0.88
-          material.roughness = 0.3
-          material.emissive.set('#470509')
-          material.emissiveIntensity = 0.08
-          if (material instanceof MeshPhysicalMaterial) {
-            material.transmission = 0
-            material.clearcoat = 0.25
-            material.clearcoatRoughness = 0.3
-          }
-        } else if (material.name.startsWith('Gold')) {
-          const isEdge = material.name.includes('bright')
-          material.color.set(isEdge ? '#efbd65' : '#c99036')
-          material.metalness = 0.96
-          material.roughness = isEdge ? 0.24 : 0.3
-        } else if (material.name.startsWith('Ruby')) {
-          material.emissiveIntensity = 1.6
-          material.roughness = 0.2
-        } else if (material.name.startsWith('Blade edge')) {
-          material.emissive.set('#ff3720')
-          material.emissiveIntensity = 0.65
-          material.metalness = 0.65
-          material.roughness = 0.28
-        }
+      if (material instanceof MeshStandardMaterial && material.name.startsWith('Gold')) {
+        // Lift studio reflections only; retain the GLB's color, metalness, roughness,
+        // normal maps and clearcoat so the guard keeps its authored gold finish.
+        material.envMapIntensity *= 1.35
+      }
+
+      if (material instanceof MeshStandardMaterial && material.name.startsWith('Ruby')
+        && material.emissive.getHex() === 0) {
+        // A faint red fill keeps the transmissive ruby readable on the dark Hero.
+        material.emissive.copy(material.color)
+        material.emissiveIntensity = 0.45
       }
       return material
     }
 
     model.traverse((object) => {
       if (object instanceof Mesh) {
-        // Hide the exported default cube, retaining its bounds to avoid a camera refit.
-        if (object.name === 'Cube') {
-          object.visible = false
-        }
         object.material = Array.isArray(object.material)
           ? object.material.map(tuneMaterial)
           : tuneMaterial(object.material)
@@ -170,26 +215,54 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
     return { model, materials }
   }, [scene])
 
+  const framingBounds = useMemo(() => {
+    const size = new Box3().setFromObject(model).getSize(new Vector3())
+    size.multiplyScalar(3 / Math.max(size.x, size.y, size.z))
+    return new Box3().setFromCenterAndSize(new Vector3(), size)
+  }, [model])
+
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials])
 
   useFrame(() => {
-    materials.forEach((material) => {
+    materials.forEach((material, source) => {
       if (!(material instanceof MeshStandardMaterial)) return
-      if (material.name.startsWith('Ruby')) material.emissiveIntensity = 1.6 + heroSwordMotion.glow * 1.2
-      if (material.name.startsWith('Blade edge')) material.emissiveIntensity = 0.65 + heroSwordMotion.glow * 0.5
+      if (!(source instanceof MeshStandardMaterial)) return
+      if (material.name.startsWith('Gold') && goldReflectionScene.environment
+        && material.envMap !== goldReflectionScene.environment) {
+        material.envMap = goldReflectionScene.environment
+        material.needsUpdate = true
+      }
+      if (material.name.startsWith('Ruby')) {
+        const base = source.emissive.getHex() === 0 ? 0.45 : source.emissiveIntensity
+        material.emissiveIntensity = base * (1 + heroSwordMotion.glow * 0.75)
+      }
+      if (material.name.startsWith('Crystal') || material.name.startsWith('Blade edge')) {
+        material.emissiveIntensity = source.emissiveIntensity * (1 + heroSwordMotion.glow * 0.35)
+      }
     })
   })
 
   return (
-    <Bounds fit clip observe margin={1.2} maxDuration={0}>
-      <IdleRotation enabled={idleRotation}>
-        <Center>
-          <Resize scale={3}>
-            <Clone object={model} />
-          </Resize>
-        </Center>
-      </IdleRotation>
+    <>
+    {/* Gold-only reflections preserve the core and ruby lighting exactly. */}
+    <Environment scene={goldReflectionScene} frames={1} resolution={256} background={false}>
+      <color attach="background" args={['#303039']} />
+      <Lightformer position={[0, 1, 5]} target={[0, 0, 0]} scale={[5, 7]} color="#fff2d8" intensity={1.4} />
+      <Lightformer position={[-4, 2, 2]} target={[0, 0, 0]} scale={[2, 5]} color="#dce6ff" intensity={1} />
+      <Lightformer position={[4, 3, -2]} target={[0, 0, 0]} scale={[2, 4]} color="#ffd59b" intensity={1.6} />
+    </Environment>
+    <Bounds margin={1.2} maxDuration={0}>
+      <ModelPlacement bounds={framingBounds}>
+        <IdleRotation enabled={idleRotation}>
+          <Center>
+            <Resize scale={3}>
+              <Clone object={model} />
+            </Resize>
+          </Center>
+        </IdleRotation>
+      </ModelPlacement>
     </Bounds>
+    </>
   )
 }
 
