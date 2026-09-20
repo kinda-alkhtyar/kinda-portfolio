@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './Contact.module.css'
+import { heroSwordRuntime } from '../components/heroSwordRuntime'
 import sword from '../assets/sword/ka-sword-with-logo.png'
 import pedestal from '../assets/sword/sword-pedestal.png'
 
@@ -17,7 +18,26 @@ export default function Contact() {
 
     const media = gsap.matchMedia(section)
 
-    media.add('(prefers-reduced-motion: no-preference)', () => {
+    media.add({
+      motion: '(prefers-reduced-motion: no-preference)',
+      desktop: '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine)',
+    }, (context) => {
+      if (!context.conditions?.motion) return
+      if (context.conditions.desktop) {
+        const compile = gsap.timeline({ paused: true, defaults: { ease: 'sine.inOut' } })
+          .fromTo(`.${styles.settleFlash}`, { opacity: 0 }, { opacity: 0.3, duration: 0.18 }, 0.28)
+          .to(`.${styles.settleFlash}`, { opacity: 0, duration: 0.26 }, 0.46)
+          .fromTo(`.${styles.content} > *`, { autoAlpha: 0, y: 20 },
+            { autoAlpha: 1, y: 0, duration: 0.3, stagger: 0.07, ease: 'sine.out' }, 0.56)
+        const unsubscribe = heroSwordRuntime.onFinalProgress(() => {
+          compile.progress(heroSwordRuntime.state.finalCompileProgress)
+        })
+        const fallback = ScrollTrigger.create({
+          trigger: section, start: 'clamp(top 85%)', once: true,
+          onEnter: () => { if (!heroSwordRuntime.state.idle.enabled) compile.progress(1) },
+        })
+        return () => { unsubscribe(); fallback.kill() }
+      }
       gsap.timeline({
         scrollTrigger: {
           trigger: section,
@@ -112,8 +132,8 @@ export default function Contact() {
               <circle cx={512} cy={95} r={62} />
             </g>
           </svg>
-          <img className={styles.pedestalImage} src={pedestal} alt="" width={1774} height={887} loading="lazy" />
-          <img className={styles.swordImage} src={sword} alt="" width={1024} height={1536} loading="lazy" />
+          <img data-sword-final-pedestal className={styles.pedestalImage} src={pedestal} alt="" width={1774} height={887} loading="lazy" />
+          <img data-sword-final-placeholder className={styles.swordImage} src={sword} alt="" width={1024} height={1536} loading="lazy" />
         </div>
         <div className={styles.content}>
           <h2 id="contact-title" className={styles.title}>

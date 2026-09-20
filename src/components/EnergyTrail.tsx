@@ -4,6 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './EnergyTrail.module.css'
 import heroStyles from '../sections/Hero.module.css'
 import { heroSwordMotion, resetHeroSwordMotion } from './heroSwordMotion'
+import { heroSwordRuntime } from './heroSwordRuntime'
+import { finalCompileStart, projectPulseTiming as pulseTiming } from './heroSwordTiming'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -196,9 +198,52 @@ export default function EnergyTrail() {
       if (!context.conditions?.motion) return
       const desktop = Boolean(context.conditions.desktop)
       const sourcePath = svg.querySelector<SVGPathElement>('path[id]')
+      const activationCleanups = ([['01', svg], ['02', continuation], ['03', thirdSegment]] as const).map(([id, segment]) => {
+        const sourcePath = segment?.querySelector<SVGPathElement>('path[id]')
+        const pulsePath = segment?.querySelector<SVGPathElement>('[data-project-pulse]')
+      let activation: gsap.core.Timeline | undefined
+      const unsubscribeCheckpoint = desktop && sourcePath && pulsePath
+        ? heroSwordRuntime.onProjectReached(id, () => {
+          if (heroSwordRuntime.state.projects[id].activated || activation) return
+          // Join the existing trail at the point nearest the sword's checkpoint pose.
+          const surface = hero.querySelector<HTMLElement>('[data-sword-render-surface]')
+          const bounds = surface?.getBoundingClientRect()
+          const matrix = sourcePath.getScreenCTM()
+          const length = sourcePath.getTotalLength()
+          let start = 0
+          if (bounds && matrix) {
+            let distance = Infinity
+            for (let index = 0; index <= 90; index++) {
+              const progress = index / 100
+              const point = sourcePath.getPointAtLength(length * progress).matrixTransform(matrix)
+              const next = Math.hypot(point.x - (bounds.left + bounds.width / 2), point.y - (bounds.top + bounds.height / 2))
+              if (next < distance) { distance = next; start = progress }
+            }
+          }
+          activation = gsap.timeline()
+            .to(heroSwordRuntime.state.projects[id], { glow: 1, duration: pulseTiming.charge, ease: 'sine.inOut' }, 0)
+            .fromTo(pulsePath, { strokeDashoffset: -start * 1000, opacity: 0 },
+              { opacity: 0.7, duration: 0.2, ease: 'sine.out' }, pulseTiming.release)
+            .to(pulsePath, { strokeDashoffset: -1000, duration: pulseTiming.travel, ease: 'sine.inOut' }, pulseTiming.release)
+            .to(heroSwordRuntime.state.projects[id], { glow: 0, duration: pulseTiming.decay, ease: 'sine.inOut' }, 0.34)
+            .call(() => heroSwordRuntime.activateProject(id), [], pulseTiming.arrival)
+            .to(pulsePath, { opacity: 0, duration: pulseTiming.fade, ease: 'sine.out' }, pulseTiming.arrival)
+        }) : undefined
+
+        return () => {
+          unsubscribeCheckpoint?.()
+          activation?.kill()
+          heroSwordRuntime.state.projects[id].glow = 0
+          if (pulsePath) {
+            pulsePath.style.opacity = '0'
+            pulsePath.style.removeProperty('stroke-dashoffset')
+          }
+        }
+      })
 
       ;[continuation, thirdSegment, finalSegment].forEach((segment, segmentIndex) => {
         if (!segment) return
+        if (desktop && segment === finalSegment) return
 
         segment.querySelectorAll('textPath').forEach((symbol, index) => {
           const motion = trailSymbols[index]
@@ -232,15 +277,10 @@ export default function EnergyTrail() {
           invalidateOnRefresh: true,
         },
       })
-        .fromTo(svg.querySelectorAll('path'), { strokeDashoffset: 1000 },
+        .fromTo(svg.querySelectorAll('path:not([data-project-pulse])'), { strokeDashoffset: 1000 },
           { strokeDashoffset: 0, duration: desktop ? 0.72 : 1, ease: 'none' }, desktop ? 0.28 : 0)
         .fromTo(svg.querySelectorAll('text'), { opacity: 0 },
           { opacity: 0.2, duration: 0.5, stagger: 0.015 }, 0.35)
-
-      if (swordModel) {
-        sequence.fromTo(swordModel, { opacity: 1 },
-          { opacity: desktop ? 0.66 : 0.85, duration: 0.55 }, 0.45)
-      }
 
       if (desktop) {
         sequence.to(heroSwordMotion, { lift: 0.12, tilt: -0.045, glow: 1, duration: 0.24 }, 0)
@@ -299,7 +339,7 @@ export default function EnergyTrail() {
             scrub: 0.8,
           },
         })
-          .fromTo(continuation.querySelectorAll('path'),
+          .fromTo(continuation.querySelectorAll('path:not([data-project-pulse])'),
             { strokeDashoffset: 1000 },
             { strokeDashoffset: 0, duration: 1, ease: 'none' }, 0)
           .fromTo(continuation.querySelectorAll('text'),
@@ -316,14 +356,30 @@ export default function EnergyTrail() {
             scrub: 0.8,
           },
         })
-          .fromTo(thirdSegment.querySelectorAll('path'),
+          .fromTo(thirdSegment.querySelectorAll('path:not([data-project-pulse])'),
             { strokeDashoffset: 1000 },
             { strokeDashoffset: 0, duration: 1, ease: 'none' }, 0)
           .fromTo(thirdSegment.querySelectorAll('text'),
             { opacity: 0 },
             { opacity: 0.2, duration: 0.7, ease: 'none' }, 0.3)
       }
-      if (finalSegment && thirdProject && ctaSword) {
+      let unsubscribeFinal: (() => void) | undefined
+      if (desktop && finalSegment) {
+        const finalTravel = gsap.timeline({ paused: true, defaults: { ease: 'none' } })
+          .fromTo(finalSegment.querySelectorAll('path'), { strokeDashoffset: 1000 },
+            { strokeDashoffset: 0, duration: finalCompileStart }, 0)
+          .to(finalSegment.querySelectorAll('path'),
+            { strokeDashoffset: -1000, duration: 1 - finalCompileStart, ease: 'sine.inOut' }, finalCompileStart)
+          .fromTo(finalSegment.querySelectorAll('text'), { opacity: 0 },
+            { opacity: 0.2, duration: 0.3 }, 0.15)
+          .to(finalSegment.querySelectorAll('textPath'),
+            { attr: { startOffset: '99%' }, duration: 0.30, stagger: 0.008, ease: 'sine.inOut' }, finalCompileStart)
+          .to(finalSegment.querySelectorAll('text'),
+            { attr: { dy: 0 }, opacity: 0, duration: 0.22, ease: 'sine.inOut' }, 0.78)
+        unsubscribeFinal = heroSwordRuntime.onFinalProgress(() => {
+          finalTravel.progress(heroSwordRuntime.state.finalTravelProgress)
+        })
+      } else if (finalSegment && thirdProject && ctaSword) {
         gsap.timeline({
           scrollTrigger: {
             trigger: thirdProject,
@@ -341,6 +397,8 @@ export default function EnergyTrail() {
             { opacity: 0.2, duration: 0.7, ease: 'none' }, 0.3)
       }
       return () => {
+        unsubscribeFinal?.()
+        activationCleanups.forEach((cleanup) => cleanup())
         resetHeroSwordMotion()
         svg.querySelectorAll('circle').forEach((particle) => particle.setAttribute('opacity', '0.25'))
         updatePath()
@@ -371,7 +429,8 @@ export default function EnergyTrail() {
       </defs>
       <ellipse className={styles.sourceGlow} rx={12} ry={28} />
       <path className={`${styles.glow} ${styles.heroGlow}`} style={{ stroke: `url(#${heroGlowId})` }} pathLength={1000} />
-      <path id={pathId} className={`${styles.line} ${styles.heroCore}`} style={{ stroke: `url(#${heroCoreId})` }} pathLength={1000} />
+      <path id={pathId} data-hero-project01-path className={`${styles.line} ${styles.heroCore}`} style={{ stroke: `url(#${heroCoreId})` }} pathLength={1000} />
+      <path data-project-pulse className={styles.heroPulse} pathLength={1000} />
       <TrailSymbols pathId={pathId} />
       {[1.2, 1.6, 1, 1.4].map((radius, index) => (
         <circle key={index} className={styles.sourceParticle} r={radius} opacity={0.25} />
@@ -379,17 +438,19 @@ export default function EnergyTrail() {
     </svg>
     <svg ref={continuationRef} className={styles.trail} aria-hidden="true" focusable="false">
       <path className={styles.glow} pathLength={1000} />
-      <path id={continuationPathId} className={styles.line} pathLength={1000} />
+      <path id={continuationPathId} data-sword-rail="project02" className={styles.line} pathLength={1000} />
+      <path data-project-pulse className={styles.heroPulse} pathLength={1000} />
       <TrailSymbols pathId={continuationPathId} />
     </svg>
     <svg ref={thirdSegmentRef} className={styles.trail} aria-hidden="true" focusable="false">
       <path className={styles.glow} pathLength={1000} />
-      <path id={thirdSegmentPathId} className={styles.line} pathLength={1000} />
+      <path id={thirdSegmentPathId} data-sword-rail="project03" className={styles.line} pathLength={1000} />
+      <path data-project-pulse className={styles.heroPulse} pathLength={1000} />
       <TrailSymbols pathId={thirdSegmentPathId} />
     </svg>
     <svg ref={finalSegmentRef} className={styles.trail} aria-hidden="true" focusable="false">
       <path className={styles.glow} pathLength={1000} />
-      <path id={finalSegmentPathId} className={styles.line} pathLength={1000} />
+      <path id={finalSegmentPathId} data-sword-rail="cta" className={styles.line} pathLength={1000} />
       <TrailSymbols pathId={finalSegmentPathId} converge />
     </svg>
     </>

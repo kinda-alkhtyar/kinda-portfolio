@@ -1,7 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
+import type { RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './Projects.module.css'
+import { heroSwordRuntime } from '../components/heroSwordRuntime'
+import type { SwordProjectId } from '../components/heroSwordRuntime'
 import aqaratiLaptop from '../assets/branding/aqarati-laptop-mockup.png'
 import aqaratiMobile from '../assets/branding/aqarati-mobile-mockup.png'
 import taaniqiLaptop from '../assets/branding/taaniqi-laptop-mockup.png'
@@ -32,94 +35,64 @@ const projects = [
   },
 ]
 
+function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass: string, id: SwordProjectId) {
+  useLayoutEffect(() => {
+    const project = projectRef.current
+    if (!project) return
+
+    const media = gsap.matchMedia(project)
+
+    media.add({
+      motion: '(prefers-reduced-motion: no-preference)',
+      desktop: '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine)',
+    }, (context) => {
+      if (!context.conditions?.motion) return
+      const desktop = Boolean(context.conditions.desktop)
+      const reveal = gsap.timeline({
+        paused: desktop,
+        defaults: {
+          autoAlpha: 0,
+          y: 20,
+          duration: 0.95,
+          ease: 'power2.out',
+          clearProps: 'opacity,visibility,transform',
+        },
+        scrollTrigger: desktop ? undefined : {
+          trigger: project,
+          start: 'top 85%',
+          once: true,
+        },
+      })
+        .from(`.${mockupClass}`, {}, 0)
+        .from(`.${styles.details} > *`, { stagger: 0.075 }, 0.14)
+      if (desktop) {
+        const unsubscribe = heroSwordRuntime.onProjectActivated(id, () => reveal.play())
+        // A failed or unavailable WebGL viewer must never hide project content.
+        const fallback = ScrollTrigger.create({
+          trigger: project,
+          start: 'top 85%',
+          once: true,
+          onEnter: () => {
+            if (!heroSwordRuntime.state.idle.enabled) reveal.play()
+          },
+        })
+        return () => { unsubscribe(); fallback.kill() }
+      }
+    })
+
+    return () => media.revert()
+  }, [projectRef, mockupClass, id])
+
+}
+
 export default function Projects() {
   const firstProjectRef = useRef<HTMLElement>(null)
   const secondProjectRef = useRef<HTMLElement>(null)
   const thirdProjectRef = useRef<HTMLElement>(null)
 
-  useLayoutEffect(() => {
-    const project = firstProjectRef.current
-    if (!project) return
-
-    const media = gsap.matchMedia(project)
-
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.timeline({
-        defaults: {
-          autoAlpha: 0,
-          y: 20,
-          duration: 0.85,
-          ease: 'power2.out',
-          clearProps: 'opacity,visibility,transform',
-        },
-        scrollTrigger: {
-          trigger: project,
-          start: 'top 85%',
-          once: true,
-        },
-      })
-        .from(`.${styles.aqaratiMockup}`, {}, 0)
-        .from(`.${styles.details} > *`, { stagger: 0.09 }, 0.1)
-    })
-
-    return () => media.revert()
-  }, [])
-
-  useLayoutEffect(() => {
-    const project = secondProjectRef.current
-    if (!project) return
-
-    const media = gsap.matchMedia(project)
-
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.timeline({
-        defaults: {
-          autoAlpha: 0,
-          y: 20,
-          duration: 0.85,
-          ease: 'power2.out',
-          clearProps: 'opacity,visibility,transform',
-        },
-        scrollTrigger: {
-          trigger: project,
-          start: 'top 85%',
-          once: true,
-        },
-      })
-        .from(`.${styles.taaniqiMockup}`, {}, 0)
-        .from(`.${styles.details} > *`, { stagger: 0.09 }, 0.1)
-    })
-
-    return () => media.revert()
-  }, [])
-
-  useLayoutEffect(() => {
-    const project = thirdProjectRef.current
-    if (!project) return
-
-    const media = gsap.matchMedia(project)
-
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      gsap.timeline({
-        defaults: {
-          autoAlpha: 0,
-          y: 20,
-          duration: 0.85,
-          ease: 'power2.out',
-          clearProps: 'opacity,visibility,transform',
-        },
-        scrollTrigger: {
-          trigger: project,
-          start: 'top 85%',
-          once: true,
-        },
-      })
-        .from(`.${styles.yumnaMockup}`, {}, 0)
-        .from(`.${styles.details} > *`, { stagger: 0.09 }, 0.1)
-    })
-
-    return () => media.revert()
-  }, [])
+  useProjectReveal(firstProjectRef, styles.aqaratiMockup, '01')
+  useProjectReveal(secondProjectRef, styles.taaniqiMockup, '02')
+  useProjectReveal(thirdProjectRef, styles.yumnaMockup, '03')
 
   return (
     <section id="projects" className={styles.projects} aria-labelledby="projects-title">

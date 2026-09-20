@@ -80,3 +80,13 @@
   fill: #ffac8b;
   filter: drop-shadow(0 0 3px #ff4038);
 }
+
+.heroPulse {
+  fill: none;
+  stroke: #ff9b82;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 45 1000;
+  opacity: 0;
+  filter: drop-shadow(0 0 4px #ff4038);
+}

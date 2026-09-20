@@ -7,10 +7,12 @@ import type { Group, Material } from 'three'
 import swordUrl from '../assets/models/Royal_Flameblade_Review.glb?url'
 import { heroSwordMotion } from './heroSwordMotion'
 import { heroSwordRuntime } from './heroSwordRuntime'
+import { finalCompileStart, railTiming } from './heroSwordTiming'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
 
 export type Sword3DProps = {
   className?: string
@@ -54,9 +56,14 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
   const elapsed = useRef(0)
   const cursor = useRef({ x: 0, y: 0 })
   const tilt = useRef({ x: 0, y: 0 })
+  const pathPose = useRef({ x: 0, y: 0, bank: 0, pitch: 0, depth: 0, flightTilt: 0 })
+  const samplePath = useRef<(() => void) | null>(null)
+  const surface = useRef<HTMLElement | null>(null)
   const invalidate = useThree((state) => state.invalidate)
   const setFrameloop = useThree((state) => state.setFrameloop)
   const canvas = useThree((state) => state.gl.domElement)
+  const getThree = useThree((state) => state.get)
+  const finalSettle = useRef(0)
 
   useEffect(() => {
     const media = window.matchMedia(
@@ -64,6 +71,116 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     )
     const hero = canvas.closest<HTMLElement>('#home')
     const project = hero?.parentElement?.querySelector<HTMLElement>('[data-energy-project]')
+    const stage = hero?.parentElement
+    const checkpoints = [project,
+      stage?.querySelector<HTMLElement>('article[aria-labelledby="project-02"]'),
+      stage?.querySelector<HTMLElement>('article[aria-labelledby="project-03"]')]
+    const finalPedestal = stage?.querySelector<HTMLElement>('[data-sword-final-pedestal]')
+    const finalPlaceholder = stage?.querySelector<HTMLElement>('[data-sword-final-placeholder]')
+    const originalPlaceholderDisplay = finalPlaceholder?.style.display ?? ''
+    const originalHeroZIndex = hero?.style.zIndex ?? ''
+    const originalHeroPosition = hero?.style.position ?? ''
+    const anchor = canvas.closest<HTMLElement>('[data-hero-sword-model]')
+    surface.current = canvas.closest<HTMLElement>('[data-sword-render-surface]')
+    const originalTranslate = surface.current?.style.translate ?? ''
+    const originalPlayState = anchor?.style.animationPlayState ?? ''
+    const boundaries = [0, 0.25, 0.5, 0.75, 1]
+    const paths = new Map<SVGPathElement, { data: string; raw: ReturnType<typeof MotionPathPlugin.getRawPath> }>()
+    const getPath = (path: SVGPathElement) => {
+      const data = path.getAttribute('d')
+      if (!data) return undefined
+      let cached = paths.get(path)
+      if (cached?.data !== data) {
+        const raw = MotionPathPlugin.getRawPath(data)
+        MotionPathPlugin.cacheRawPathMeasurements(raw, 32)
+        cached = { data, raw }
+        paths.set(path, cached)
+      }
+      return cached?.raw
+    }
+    const measureJourney = () => {
+      if (!hero) return
+      const start = hero.getBoundingClientRect().top + window.scrollY
+      const end = ScrollTrigger.maxScroll(window)
+      const distance = Math.max(1, end - start)
+      checkpoints.forEach((element, index) => {
+        if (!element) return
+        const at = element.getBoundingClientRect().bottom + window.scrollY - window.innerHeight * 0.85
+        boundaries[index + 1] = Math.max(boundaries[index] + 0.001, Math.min(0.997 + index * 0.001, (at - start) / distance))
+      })
+    }
+    samplePath.current = () => {
+      const journey = heroSwordRuntime.state.scrollProgress
+      const index = journey < boundaries[1] ? 0 : journey < boundaries[2] ? 1 : journey < boundaries[3] ? 2 : 3
+      const progress = railTiming((journey - boundaries[index]) / (boundaries[index + 1] - boundaries[index]))
+      const selectors = ['[data-hero-project01-path]', '[data-sword-rail="project02"]', '[data-sword-rail="project03"]', '[data-sword-rail="cta"]']
+      const firstPath = stage?.querySelector<SVGPathElement>(selectors[0])
+      const path = stage?.querySelector<SVGPathElement>(selectors[index])
+      const matrix = path?.getScreenCTM()
+      const firstMatrix = firstPath?.getScreenCTM()
+      if (!path || !firstPath || !matrix || !firstMatrix) return
+      const rawPath = getPath(path)
+      const firstRaw = getPath(firstPath)
+      if (!rawPath || !firstRaw) return
+      // Scroll owns the complete flight pose: reversing retraces it exactly.
+      const railProgress = progress * progress * (3 - 2 * progress)
+      const envelope = Math.sin(Math.PI * progress) ** 2
+      const start = MotionPathPlugin.getPositionOnPath(firstRaw, 0, true) as { x: number; y: number; angle: number }
+      const point = MotionPathPlugin.getPositionOnPath(rawPath, railProgress, true) as { x: number; y: number; angle: number }
+      const before = MotionPathPlugin.getPositionOnPath(rawPath, Math.max(0, railProgress - 0.045), true) as { angle: number }
+      const ahead = MotionPathPlugin.getPositionOnPath(rawPath, Math.min(1, railProgress + 0.045), true) as { angle: number }
+      const turnAngle = (ahead.angle - before.angle) * Math.PI / 180
+      const curvature = Math.atan2(Math.sin(turnAngle), Math.cos(turnAngle))
+      // A symmetric look-ahead/behind window anticipates turns in either scroll direction.
+      const bank = Math.tanh(curvature * 1.7) * 0.3 * envelope
+      const heading = point.angle * Math.PI / 180
+      const tangentX = matrix.a * Math.cos(heading) + matrix.c * Math.sin(heading)
+      const tangentY = matrix.b * Math.cos(heading) + matrix.d * Math.sin(heading)
+      const tangentLength = Math.hypot(tangentX, tangentY) || 1
+      const tx = tangentX / tangentLength
+      const ty = tangentY / tangentLength
+      const lateral = (18 * Math.sin(progress * Math.PI * 3) - bank * 22) * envelope
+      // A small tangent overshoot crests near arrival and settles exactly at progress 1.
+      const arrival = Math.max(0, (progress - 0.82) / 0.18)
+      const overshoot = Math.sin(Math.PI * arrival) ** 2 * 14
+      const dx = matrix.a * point.x + matrix.c * point.y + matrix.e - (firstMatrix.a * start.x + firstMatrix.c * start.y + firstMatrix.e)
+      const dy = matrix.b * point.x + matrix.d * point.y + matrix.f - (firstMatrix.b * start.x + firstMatrix.d * start.y + firstMatrix.f)
+      // Keep the existing curve as a guide, adding only a restrained flight offset.
+      pathPose.current = {
+        x: dx - ty * lateral + tx * overshoot,
+        y: dy + tx * lateral + ty * overshoot,
+        bank,
+        // Peak at 40 degrees mid-segment; settle upright at both checkpoints.
+        // Segment-based direction retraces identically when scrolling backward.
+        flightTilt: (index % 2 === 0 ? -1 : 1) * (40 * Math.PI / 180) * envelope,
+        pitch: Math.sin(progress * Math.PI * 2) * envelope * 0.09 - bank * 0.25,
+        depth: Math.sin(progress * Math.PI * 2) * envelope * 0.12,
+      }
+      finalSettle.current = index === 3 ? railProgress : 0
+      const compile = index === 3 ? Math.max(0, (progress - finalCompileStart) / (1 - finalCompileStart)) : 0
+      heroSwordRuntime.setFinalProgress(index === 3 ? progress : 0, compile)
+      const upright = compile * compile * (3 - 2 * compile)
+      pathPose.current.bank *= 1 - upright
+      pathPose.current.pitch *= 1 - upright
+      pathPose.current.flightTilt *= 1 - upright
+      if (index === 3 && finalPedestal && anchor && group.current?.parent) {
+        const { camera, viewport, size } = getThree()
+        const parent = group.current.parent
+        const center = parent.getWorldPosition(new Vector3()).project(camera)
+        const base = anchor.getBoundingClientRect()
+        const pedestal = finalPedestal.getBoundingClientRect()
+        const worldHeight = viewport.getCurrentViewport(camera, new Vector3()).height
+        const halfHeight = 3 * parent.scale.y * size.height / worldHeight / 2
+        const dockX = pedestal.left + pedestal.width / 2 - (base.left + (center.x + 1) * base.width / 2)
+        const dockY = pedestal.top + pedestal.height * 0.23 - 12 - halfHeight - (base.top + (1 - center.y) * base.height / 2)
+        const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1) as { x: number; y: number }
+        const endX = matrix.a * endPoint.x + matrix.c * endPoint.y + matrix.e - (firstMatrix.a * start.x + firstMatrix.c * start.y + firstMatrix.e)
+        const endY = matrix.b * endPoint.x + matrix.d * endPoint.y + matrix.f - (firstMatrix.b * start.x + firstMatrix.d * start.y + firstMatrix.f)
+        pathPose.current.x += (dockX - endX) * railProgress
+        pathPose.current.y += (dockY - endY) * railProgress
+      }
+      if (anchor) anchor.style.animationPlayState = journey > 0 ? 'paused' : originalPlayState
+    }
     let checkpoint: gsap.core.Tween | undefined
     const resetCursor = () => {
       cursor.current = { x: 0, y: 0 }
@@ -83,8 +200,17 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       checkpoint?.scrollTrigger?.kill()
       checkpoint?.kill()
       heroSwordRuntime.resetScroll()
+      heroSwordRuntime.setFinalProgress(0, 0)
+      if (surface.current) surface.current.style.translate = originalTranslate
+      if (anchor) anchor.style.animationPlayState = originalPlayState
       // Touch-capable laptops still qualify when a mouse/trackpad is available.
       active.current = enabled && media.matches
+      if (finalPlaceholder) finalPlaceholder.style.display = active.current ? 'none' : originalPlaceholderDisplay
+      // Keep the same Canvas above later section backgrounds throughout the journey.
+      if (hero) {
+        hero.style.position = active.current ? 'relative' : originalHeroPosition
+        hero.style.zIndex = active.current ? '3' : originalHeroZIndex
+      }
       setFrameloop(active.current ? 'always' : 'demand')
       elapsed.current = 0
       heroSwordRuntime.setIdle(active.current)
@@ -96,20 +222,20 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
         group.current.scale.setScalar(1)
       }
       if (active.current && hero && project) {
+        measureJourney()
         const travel = { progress: 0 }
         checkpoint = gsap.to(travel, {
           progress: 1,
           ease: 'none',
-          onUpdate: () => heroSwordRuntime.setScroll(travel.progress, true),
+          onUpdate: () => heroSwordRuntime.setScroll(travel.progress, true, boundaries[1], boundaries[2], boundaries[3]),
           scrollTrigger: {
-            id: 'hero-sword-project-01-checkpoint',
+            id: 'hero-sword-full-journey',
             trigger: hero,
             start: 'top top',
-            endTrigger: project,
-            end: 'top 85%',
-            scrub: 1.2,
+            end: () => ScrollTrigger.maxScroll(window),
+            scrub: true,
             invalidateOnRefresh: true,
-            onScrubComplete: () => heroSwordRuntime.setScroll(travel.progress, false),
+            onRefresh: () => { measureJourney(); samplePath.current?.() },
           },
         })
       }
@@ -124,6 +250,13 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       checkpoint?.scrollTrigger?.kill()
       checkpoint?.kill()
       heroSwordRuntime.resetScroll()
+      heroSwordRuntime.setFinalProgress(0, 0)
+      if (finalPlaceholder) finalPlaceholder.style.display = originalPlaceholderDisplay
+      if (hero) { hero.style.position = originalHeroPosition; hero.style.zIndex = originalHeroZIndex }
+      if (surface.current) surface.current.style.translate = originalTranslate
+      if (anchor) anchor.style.animationPlayState = originalPlayState
+      samplePath.current = null
+      surface.current = null
       active.current = false
       heroSwordRuntime.setIdle(false)
       heroSwordRuntime.setMouse(0, 0)
@@ -133,7 +266,7 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       hero?.removeEventListener('pointerleave', resetCursor)
       window.removeEventListener('blur', resetCursor)
     }
-  }, [enabled, invalidate, setFrameloop, canvas])
+  }, [enabled, invalidate, setFrameloop, canvas, getThree])
 
   useFrame((_, delta) => {
     if (!active.current || !group.current) return
@@ -146,11 +279,18 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     tilt.current.x += (cursor.current.y * Math.PI / 90 - tilt.current.x) * damping
     tilt.current.y += (cursor.current.x * Math.PI / 60 - tilt.current.y) * damping
     const progress = heroSwordRuntime.state.scrollProgress
-    group.current.rotation.x = tilt.current.x - progress * 0.06
-    group.current.rotation.y = Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y + progress * 0.07
-    group.current.rotation.z = progress * -0.025
-    group.current.position.x = progress * 0.12
-    group.current.position.y = progress * -0.3
+    samplePath.current?.()
+    heroSwordRuntime.state.isScrollActive = progress > 0 && progress < 1 && ScrollTrigger.isScrolling()
+    const idleWeight = (1 - Math.min(1, progress * 12) * 0.85) * (1 - finalSettle.current)
+    group.current.rotation.x = tilt.current.x * idleWeight + pathPose.current.pitch
+    group.current.rotation.y = (Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y) * idleWeight + pathPose.current.bank * 0.4
+    group.current.rotation.z = pathPose.current.flightTilt
+    group.current.position.z = pathPose.current.depth
+    // Move the render surface with the sword so its travel is not clipped by the Canvas.
+    // The model's base placement and scale remain owned by ModelPlacement.
+    if (surface.current) {
+      surface.current.style.translate = `${pathPose.current.x}px ${pathPose.current.y}px`
+    }
   })
 
   return <group ref={group}>{children}</group>
@@ -223,6 +363,8 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials])
 
   useFrame(() => {
+    const compile = heroSwordRuntime.state.finalCompileProgress
+    const compileGlow = compile < 0.7 ? Math.sin(Math.PI * compile / 0.7) ** 2 : 0
     materials.forEach((material, source) => {
       if (!(material instanceof MeshStandardMaterial)) return
       if (!(source instanceof MeshStandardMaterial)) return
@@ -233,10 +375,12 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       }
       if (material.name.startsWith('Ruby')) {
         const base = source.emissive.getHex() === 0 ? 0.45 : source.emissiveIntensity
-        material.emissiveIntensity = base * (1 + heroSwordMotion.glow * 0.75)
+        const glow = Math.max(compileGlow, ...Object.values(heroSwordRuntime.state.projects).map((project) => project.glow))
+        material.emissiveIntensity = base * (1 + heroSwordMotion.glow * 0.75 + glow * 0.8)
       }
       if (material.name.startsWith('Crystal') || material.name.startsWith('Blade edge')) {
-        material.emissiveIntensity = source.emissiveIntensity * (1 + heroSwordMotion.glow * 0.35)
+        const glow = Math.max(compileGlow, ...Object.values(heroSwordRuntime.state.projects).map((project) => project.glow))
+        material.emissiveIntensity = source.emissiveIntensity * (1 + heroSwordMotion.glow * 0.35 + glow * 0.4)
       }
     })
   })
@@ -272,6 +416,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
   return (
     <div
       className={className}
+      data-sword-render-surface
       style={{ width: '100%', height: 480, ...style, ...transparentSurface }}
       role="img"
       aria-label="Royal Flameblade sword in 3D"
