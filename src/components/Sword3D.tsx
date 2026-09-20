@@ -170,11 +170,10 @@ function ModelPlacement({ bounds, children }: { bounds: Box3; children: ReactNod
   useFrame(({ camera, viewport, size }) => {
     if (group.current && size.height > 0) {
       const worldHeight = viewport.getCurrentViewport(camera, origin).height
-      group.current.position.y = -36 * worldHeight / size.height
+      group.current.position.y = -22 * worldHeight / size.height
     }
   })
-
-  return <group ref={group} scale={1.73279925}>{children}</group>
+return <group ref={group} scale={1.806}>{children}</group>
 }
 
 function SwordModel({ idleRotation }: { idleRotation: boolean }) {
