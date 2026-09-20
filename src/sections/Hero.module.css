@@ -155,21 +155,16 @@
 
 .swordVisual::before {
   background:
-    radial-gradient(ellipse 12% 9% at 50% 15%, #ff714033, transparent 85%),
-    radial-gradient(ellipse 13% 30% at 50% 57%, #f13b302b, transparent 85%),
-    radial-gradient(ellipse 44% 12% at 50% 91%, #df302f24, transparent 90%),
-    radial-gradient(ellipse 48% 48% at 50% 50%, #53110f40 0%, #23090833 55%, transparent 100%),
+    radial-gradient(ellipse 18% 13% at 50% 15%, #ff593641, #a91e1924 42%, transparent 78%),
+    radial-gradient(ellipse 17% 38% at 50% 56%, #d82a2326, #7f14121c 48%, transparent 82%),
+    radial-gradient(ellipse 48% 15% at 50% 91%, #d82c2929, transparent 82%),
+    radial-gradient(ellipse 50% 49% at 50% 50%, #53110f38 0%, #2309082b 58%, transparent 100%),
     radial-gradient(ellipse 26% 42% at 50% 44%, #03020299, transparent 100%);
-  filter: blur(12px);
+  filter: blur(16px);
 }
 
 .swordVisual::after {
-  background:
-    linear-gradient(180deg, transparent, #d9955426 45%, #ef542d14 70%, transparent) 18% 12% / 1px 62%,
-    linear-gradient(180deg, transparent, #e4ab681f 38%, transparent) 80% 0 / 2px 75%,
-    linear-gradient(180deg, transparent, #a9553021 55%, transparent) 91% 50% / 1px 48%;
-  background-repeat: no-repeat;
-  filter: blur(1px);
+  content: none;
 }
 
 .pedestalImage {
@@ -177,21 +172,139 @@
   top: calc(44% + var(--sword-height) / 2);
   left: 50%;
   display: block;
-  width: min(70%, 260px);
+  width: min(105%, 390px);
   height: auto;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  filter: none;
+  /* Follow the asset silhouette to hide its baked-in rectangular background. */
+  clip-path: polygon(
+    3.7% 76.5%, 12.5% 32%, 13.5% 30.5%, 17.8% 29%,
+    18.2% 25.5%, 19.5% 24%, 23% 22.8%, 32% 21.6%,
+    42% 21.2%, 58% 21.2%, 68% 21.6%, 77% 22.8%,
+    80.5% 24%, 81.8% 25.5%, 82.2% 29%, 86.5% 30.5%,
+    87.5% 32%, 96.3% 76.5%, 96.3% 79.5%, 91% 81.5%,
+    80% 84%, 65% 85.5%, 50% 86.2%, 35% 85.5%,
+    20% 84%, 9% 81.5%, 3.7% 79.5%
+  );
   transform: translate(-50%, -28%);
+}
+
+.swordAtmosphere {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: calc(var(--sword-height) * 0.62);
+  height: var(--sword-height);
+  background:
+    radial-gradient(ellipse 20% 9% at 50% 8%, #ff7b574f 0%, #c6282430 42%, transparent 78%),
+    radial-gradient(ellipse 8% 36% at 50% 61%, #ff3d3430 0%, #a7191820 48%, transparent 86%),
+    radial-gradient(ellipse 38% 46% at 50% 51%, #8d15141f 0%, transparent 72%);
+  filter: blur(13px);
+  opacity: 0.9;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .swordImage {
   position: absolute;
-  top: 44%;
+  top: calc(44% + 22px);
   left: 50%;
   display: block;
-  width: auto;
-  height: var(--sword-height);
-  max-width: 100%;
+  width: calc(var(--sword-height) * 1.26);
+  height: calc(var(--sword-height) * 1.89);
   object-fit: contain;
   transform: translate(-50%, -50%);
+}
+
+.swordImage,
+.swordImage div,
+.swordImage canvas {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  filter: none;
+  clip-path: none;
+  overflow: visible;
+}
+
+.swordImage canvas {
+  display: block;
+}
+
+@keyframes swordIdleFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@media (min-width: 681px) and (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .swordImage {
+    animation: swordIdleFloat 8s ease-in-out infinite;
+  }
+}
+
+.energySpiral {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: calc(var(--sword-height) * 2 / 3);
+  height: var(--sword-height);
+  max-width: 100%;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  stroke: #ff9a8d;
+  stroke-width: 0.85;
+  stroke-linecap: round;
+  filter:
+    drop-shadow(0 0 2px #ff5148c7)
+    drop-shadow(0 0 8px #ee262687)
+    drop-shadow(0 0 18px #b9101854);
+}
+
+.energyBack {
+  opacity: 0.24;
+}
+
+.energyFront {
+  opacity: 0.82;
+}
+
+.energyBack .energyCoil path {
+  stroke: url('#hero-spiral-back');
+}
+
+.energyFront .energyCoil path {
+  stroke: url('#hero-spiral-front');
+}
+
+.energyGlow {
+  stroke-width: 15;
+  opacity: 0.2;
+  filter: blur(7px);
+}
+
+.energySymbols {
+  fill: #f08b78;
+  stroke: none;
+  opacity: 0.42;
+  font-family: monospace;
+  font-size: 10px;
+}
+
+.energyParticles {
+  fill: #ffb0a0;
+  stroke: none;
+  opacity: 0.65;
 }
 
 @media (max-width: 680px) {
@@ -227,13 +340,18 @@
     top: 50%;
   }
 
-  .swordImage {
+  .energySpiral,
+  .swordAtmosphere {
     top: 50%;
     height: 320px;
   }
 
+  .swordImage {
+    top: calc(50% + 22px);
+  }
+
   .pedestalImage {
     top: calc(50% + 160px);
-    width: min(65%, 150px);
+    width: min(97.5%, 225px);
   }
 }

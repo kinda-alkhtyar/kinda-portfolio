@@ -2,6 +2,8 @@ import { useId, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './EnergyTrail.module.css'
+import heroStyles from '../sections/Hero.module.css'
+import { heroSwordMotion, resetHeroSwordMotion } from './heroSwordMotion'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -52,6 +54,7 @@ export default function EnergyTrail() {
     const sword = stage?.querySelector<HTMLElement>('[data-energy-sword]')
     const project = stage?.querySelector<HTMLElement>('[data-energy-project]')
     const hero = stage?.querySelector<HTMLElement>('#home')
+    const swordModel = stage?.querySelector<HTMLElement>('[data-hero-sword-model]')
     const continuation = continuationRef.current
     const secondProject = stage?.querySelector<HTMLElement>('article[aria-labelledby="project-02"]')
     const thirdSegment = thirdSegmentRef.current
@@ -78,7 +81,11 @@ export default function EnergyTrail() {
       const swordPosition = position(sword)
       const projectPosition = position(project)
       const startX = swordPosition.x + sword.offsetWidth / 2
-      const startY = swordPosition.y + sword.offsetHeight * 0.9
+      const modelPosition = swordModel ? position(swordModel) : swordPosition
+      // offsetTop is the centered wrapper's anchor; account for translateY(-50%).
+      const startY = swordModel
+        ? modelPosition.y - swordModel.offsetHeight * 0.02
+        : swordPosition.y + sword.offsetHeight * 0.6
       const endY = projectPosition.y + project.offsetHeight - 20
       const distance = Math.max(0, endY - startY)
       const endX = projectPosition.x + project.offsetWidth * 0.75
@@ -181,45 +188,24 @@ export default function EnergyTrail() {
     ScrollTrigger.addEventListener('refreshInit', updatePath)
 
     const media = gsap.matchMedia(svg)
-    media.add('(prefers-reduced-motion: no-preference)', () => {
+    media.add({
+      motion: '(prefers-reduced-motion: no-preference)',
+      desktop: '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine)',
+    }, (context) => {
+      resetHeroSwordMotion()
+      if (!context.conditions?.motion) return
+      const desktop = Boolean(context.conditions.desktop)
       const sourcePath = svg.querySelector<SVGPathElement>('path[id]')
-      if (sourcePath) {
-        svg.querySelectorAll('circle').forEach((particle, index) => {
-          const travel = { progress: 0 }
-          gsap.to(travel, {
-            progress: 1,
-            duration: 2.6 + index * 0.53,
-            delay: index * 0.61,
-            repeat: -1,
-            repeatDelay: 0.25 + index * 0.17,
-            ease: 'none',
-            onUpdate: () => {
-              const point = sourcePath.getPointAtLength(
-                sourcePath.getTotalLength() * travel.progress * (0.09 + index * 0.015),
-              )
-              particle.setAttribute('cx', `${point.x}`)
-              particle.setAttribute('cy', `${point.y + Math.sin(travel.progress * Math.PI) * (index % 2 ? -7 : 7)}`)
-              particle.setAttribute('opacity', `${Math.sin(travel.progress * Math.PI) * 0.5}`)
-            },
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top bottom',
-              end: 'bottom top',
-              toggleActions: 'play pause resume pause',
-            },
-          })
-        })
-      }
 
-      ;[svg, continuation, thirdSegment, finalSegment].forEach((segment, segmentIndex) => {
+      ;[continuation, thirdSegment, finalSegment].forEach((segment, segmentIndex) => {
         if (!segment) return
 
         segment.querySelectorAll('textPath').forEach((symbol, index) => {
           const motion = trailSymbols[index]
           gsap.to(symbol, {
             attr: { startOffset: `${motion.offset + motion.drift}%` },
-            duration: motion.duration + segmentIndex * (index % 2 === 0 ? 0.7 : 0.35),
-            delay: motion.delay + segmentIndex * 0.43,
+            duration: motion.duration + (segmentIndex + 1) * (index % 2 === 0 ? 0.7 : 0.35),
+            delay: motion.delay + (segmentIndex + 1) * 0.43,
             repeatDelay: 0.15 + (index % 3) * 0.23,
             repeat: -1,
             yoyo: true,
@@ -234,17 +220,74 @@ export default function EnergyTrail() {
         })
       })
 
-      gsap.timeline({
+      const sequence = gsap.timeline({
+        defaults: { ease: 'sine.inOut' },
         scrollTrigger: {
+          id: 'hero-sword-release',
           trigger: hero,
           start: 'top top',
           endTrigger: project,
           end: 'bottom 85%',
-          scrub: 0.8,
+          scrub: 1.2,
+          invalidateOnRefresh: true,
         },
       })
-        .fromTo('path', { strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 1, ease: 'none' }, 0)
-        .fromTo('text', { opacity: 0 }, { opacity: 0.2, duration: 0.7, ease: 'none' }, 0.3)
+        .fromTo(svg.querySelectorAll('path'), { strokeDashoffset: 1000 },
+          { strokeDashoffset: 0, duration: desktop ? 0.72 : 1, ease: 'none' }, desktop ? 0.28 : 0)
+        .fromTo(svg.querySelectorAll('text'), { opacity: 0 },
+          { opacity: 0.2, duration: 0.5, stagger: 0.015 }, 0.35)
+
+      if (swordModel) {
+        sequence.fromTo(swordModel, { opacity: 1 },
+          { opacity: desktop ? 0.66 : 0.85, duration: 0.55 }, 0.45)
+      }
+
+      if (desktop) {
+        sequence.to(heroSwordMotion, { lift: 0.12, tilt: -0.045, glow: 1, duration: 0.24 }, 0)
+          .to(heroSwordMotion, { glow: 0.25, duration: 0.4 }, 0.3)
+          .to(heroSwordMotion, { recede: 1, lift: 0.16, tilt: -0.025, duration: 0.6 }, 0.4)
+
+        const spirals = hero.querySelectorAll(`.${heroStyles.energySpiral}`)
+        sequence.to(spirals, { scaleX: 0.84, scaleY: 0.95, transformOrigin: '50% 50%', duration: 0.24 }, 0.03)
+          .to(spirals, { scaleX: 1, scaleY: 1, duration: 0.35 }, 0.28)
+        sequence.fromTo(svg.querySelector('ellipse'), { opacity: 0 },
+          { opacity: 0.45, duration: 0.12 }, 0.23)
+          .to(svg.querySelector('ellipse'), { opacity: 0.1, duration: 0.35 }, 0.35)
+
+        // These are the existing trail symbols, released from its sword-side origin.
+        svg.querySelectorAll('textPath').forEach((symbol, index) => {
+          sequence.fromTo(symbol, { attr: { startOffset: '0%' } }, {
+            attr: { startOffset: `${trailSymbols[index].offset}%` },
+            duration: 0.48 + (index % 3) * 0.05,
+            ease: 'power1.out',
+          }, 0.29 + index * 0.018)
+        })
+
+        if (sourcePath) {
+          svg.querySelectorAll('circle').forEach((particle, index) => {
+            const travel = { progress: 0 }
+            const renderParticle = () => {
+              const point = sourcePath.getPointAtLength(sourcePath.getTotalLength() * travel.progress * (0.5 + index * 0.1))
+              particle.setAttribute('cx', `${point.x}`)
+              particle.setAttribute('cy', `${point.y}`)
+            }
+            sequence.to(travel, { progress: 1, duration: 0.46 + index * 0.045,
+              ease: 'power1.out', onUpdate: renderParticle }, 0.29 + index * 0.035)
+            sequence.fromTo(particle, { opacity: 0 }, { opacity: 0.6, duration: 0.08 }, 0.29 + index * 0.035)
+              .to(particle, { opacity: 0, duration: 0.18 }, 0.65 + index * 0.04)
+          })
+        }
+        const symbols = hero.querySelectorAll(`.${heroStyles.energySymbols} text`)
+        symbols.forEach((symbol, index) => {
+          sequence.to(symbol, { x: (1 - index) * 12, y: 24 + index * 10,
+            opacity: 0, duration: 0.25 + index * 0.04 }, 0.24 + index * 0.035)
+        })
+        // Animate the parent so the existing idle particle motion keeps its own transforms.
+        sequence.to(hero.querySelector(`.${heroStyles.energyParticles}`),
+          { y: 35, opacity: 0, duration: 0.35 }, 0.26)
+      } else {
+        gsap.set(svg.querySelectorAll('circle, ellipse'), { opacity: 0 })
+      }
 
       if (continuation && secondProject) {
         gsap.timeline({
@@ -296,6 +339,11 @@ export default function EnergyTrail() {
           .fromTo(finalSegment.querySelectorAll('text'),
             { opacity: 0 },
             { opacity: 0.2, duration: 0.7, ease: 'none' }, 0.3)
+      }
+      return () => {
+        resetHeroSwordMotion()
+        svg.querySelectorAll('circle').forEach((particle) => particle.setAttribute('opacity', '0.25'))
+        updatePath()
       }
     })
 
