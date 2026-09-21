@@ -1,11 +1,56 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './ContactForm.module.css'
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const animations: Animation[] = []
+    let entered = false
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting) || motion.matches || entered) return
+      entered = true
+      observer.disconnect()
+      const elements = section.querySelectorAll<HTMLElement>(
+        `.${styles.header} > *, .${styles.field}, .${styles.submit}`,
+      )
+      elements.forEach((element, index) => {
+        animations.push(element.animate([
+          { opacity: 0, transform: 'translateY(16px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ], {
+          duration: 850,
+          delay: index * 90,
+          easing: 'cubic-bezier(.22, 1, .36, 1)',
+          fill: 'backwards',
+        }))
+      })
+    }, { threshold: 0.12 })
+
+    const updateMotion = () => {
+      if (motion.matches) {
+        observer.disconnect()
+        animations.forEach((animation) => animation.cancel())
+      } else if (!entered) {
+        observer.observe(section)
+      }
+    }
+    updateMotion()
+    motion.addEventListener('change', updateMotion)
+    return () => {
+      observer.disconnect()
+      animations.forEach((animation) => animation.cancel())
+      motion.removeEventListener('change', updateMotion)
+    }
+  }, [])
 
   return (
-    <section className={styles.section} aria-labelledby="message-heading">
+    <section ref={sectionRef} className={styles.section} aria-labelledby="message-heading">
       <form className={styles.form} onSubmit={(event) => {
         event.preventDefault()
         setSubmitted(true)

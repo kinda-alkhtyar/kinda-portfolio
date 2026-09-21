@@ -10,6 +10,35 @@
 
 .page * { box-sizing: border-box; }
 
+.main {
+  width: 100%;
+  margin: 0 auto;
+}
+
+@keyframes contactHeroEntrance {
+  from { opacity: 0; translate: 0 16px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero .label,
+  .hero .headingWrap,
+  .hero .description,
+  .hero .swordScene img,
+  .hero .ideas,
+  .hero .motto,
+  .hero .swordCaption {
+    animation: contactHeroEntrance .85s cubic-bezier(.22, 1, .36, 1) backwards;
+  }
+
+  .hero .headingWrap { animation-delay: .1s; }
+  .hero .description { animation-delay: .22s; }
+  .hero .swordScene img { animation-duration: 1.15s; animation-delay: .18s; }
+  .hero .ideas { animation-delay: .32s; }
+  .hero .motto { animation-delay: .4s; }
+  .hero .swordCaption { animation-delay: .46s; }
+}
+
 .hero {
   position: relative;
   isolation: isolate;
@@ -23,6 +52,75 @@
     radial-gradient(ellipse at 83% 77%, #75190b26, transparent 35%),
     radial-gradient(ellipse at 78% 28%, #381c112e, transparent 40%),
     linear-gradient(110deg, #030302 38%, #0d0806 75%, #030302);
+}
+
+@media (min-width: 1101px) {
+  .main {
+    position: relative;
+    isolation: isolate;
+    max-width: 1600px;
+    min-height: clamp(900px, 66.6667vw, 1067px);
+    overflow: hidden;
+    border-bottom: 1px solid #8b5b2e;
+    background:
+      radial-gradient(ellipse at 83% 77%, #75190b26, transparent 35%),
+      radial-gradient(ellipse at 78% 28%, #381c112e, transparent 40%),
+      linear-gradient(110deg, #030302 38%, #0d0806 75%, #030302);
+  }
+
+  .main::before {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent 48%, #7d241014 48.1%, transparent 48.35%),
+      linear-gradient(90deg, transparent 76%, #a6311712 76.1%, transparent 76.35%),
+      repeating-linear-gradient(90deg, transparent 0 7.8%, #8d2a1708 7.9%, transparent 8.05% 15.8%),
+      radial-gradient(ellipse at 78% 26%, #9c301018, transparent 27%);
+    pointer-events: none;
+    content: '';
+  }
+
+  .main > section:first-child {
+    position: absolute;
+    inset: 0;
+    min-height: 100%;
+    aspect-ratio: auto;
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  .main > section:nth-child(2) {
+    position: absolute;
+    z-index: 2;
+    top: 39%;
+    left: 5.3%;
+    width: 28.7%;
+  }
+
+  .main > section:nth-child(3) {
+    position: absolute;
+    z-index: 2;
+    top: calc(37% + 35px);
+    left: 35.6%;
+    width: 37.5%;
+  }
+
+  .main > section:nth-child(4) {
+    position: absolute;
+    z-index: 2;
+    right: 25%;
+    bottom: 3.8%;
+    left: 5.3%;
+    width: auto;
+  }
+
+  .content { padding-top: clamp(112px, 8.3vw, 133px); }
+  .description { margin-top: 14px; }
+  .swordScene { top: 7.5%; right: 4.5%; width: 25%; height: 84%; }
+  .ideas { top: 12%; right: 2.7%; }
+  .motto { display: none; }
+  .swordCaption { right: 2.6%; bottom: 13%; }
 }
 
 .content {

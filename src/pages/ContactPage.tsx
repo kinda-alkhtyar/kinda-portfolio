@@ -9,7 +9,7 @@ export default function ContactPage() {
   return (
     <div className={styles.page}>
       <Navbar currentPage="contact" />
-      <main>
+      <main className={styles.main}>
         <section className={styles.hero} aria-labelledby="contact-heading">
           <div className={styles.content}>
             <p className={styles.label}><span aria-hidden="true">//</span>Contact</p>

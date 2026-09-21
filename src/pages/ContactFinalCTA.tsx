@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import sword from '../assets/contact/contact-hero-sword..png'
 import styles from './ContactFinalCTA.module.css'
 
@@ -20,8 +21,69 @@ function ServiceIcon({ kind }: { kind: typeof services[number]['icon'] }) {
 }
 
 export default function ContactFinalCTA() {
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const animations: Animation[] = []
+    let entered = false
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting) || motion.matches || entered) return
+      entered = true
+      observer.disconnect()
+
+      const elements = section.querySelectorAll<HTMLElement>(
+        `.${styles.invitation}, .${styles.services} > li, .${styles.caption}`,
+      )
+      Array.from(elements).filter((element) => element.getClientRects().length > 0)
+        .forEach((element, index) => {
+          animations.push(element.animate([
+            { opacity: 0, transform: 'translateY(12px)' },
+            { opacity: 1, transform: 'translateY(0)' },
+          ], {
+            duration: 850,
+            delay: index * 90,
+            easing: 'cubic-bezier(.22, 1, .36, 1)',
+            fill: 'backwards',
+          }))
+        })
+
+      const image = section.querySelector<HTMLImageElement>(`.${styles.scene} img`)
+      if (image?.getClientRects().length) {
+        animations.push(image.animate([
+          { opacity: 0, transform: 'translateY(10px) scale(.985)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ], {
+          duration: 1150,
+          delay: 180,
+          easing: 'cubic-bezier(.22, 1, .36, 1)',
+          fill: 'backwards',
+        }))
+      }
+    }, { threshold: 0.12 })
+
+    const updateMotion = () => {
+      if (motion.matches) {
+        observer.disconnect()
+        animations.forEach((animation) => animation.cancel())
+      } else if (!entered) {
+        observer.observe(section)
+      }
+    }
+    updateMotion()
+    motion.addEventListener('change', updateMotion)
+    return () => {
+      observer.disconnect()
+      animations.forEach((animation) => animation.cancel())
+      motion.removeEventListener('change', updateMotion)
+    }
+  }, [])
+
   return (
-    <section className={styles.section} aria-labelledby="contact-final-heading">
+    <section ref={sectionRef} className={styles.section} aria-labelledby="contact-final-heading">
       <div className={styles.invitation}>
         <h2 id="contact-final-heading"><a href="#contact-name">Let’s build<br />a brighter tomorrow.</a></h2>
         <span className={styles.rule} aria-hidden="true" />

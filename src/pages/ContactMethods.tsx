@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import styles from './ContactMethods.module.css'
 
 const methods = [
@@ -19,8 +20,51 @@ function MethodIcon({ kind }: { kind: typeof methods[number]['icon'] }) {
 }
 
 export default function ContactMethods() {
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const animations: Animation[] = []
+    let entered = false
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting) || motion.matches || entered) return
+      entered = true
+      observer.disconnect()
+      section.querySelectorAll<HTMLElement>(`.${styles.card}`).forEach((card, index) => {
+        animations.push(card.animate([
+          { opacity: 0, transform: 'translateY(16px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ], {
+          duration: 850,
+          delay: index * 110,
+          easing: 'cubic-bezier(.22, 1, .36, 1)',
+          fill: 'backwards',
+        }))
+      })
+    }, { threshold: 0.12 })
+
+    const updateMotion = () => {
+      if (motion.matches) {
+        observer.disconnect()
+        animations.forEach((animation) => animation.cancel())
+      } else if (!entered) {
+        observer.observe(section)
+      }
+    }
+    updateMotion()
+    motion.addEventListener('change', updateMotion)
+    return () => {
+      observer.disconnect()
+      animations.forEach((animation) => animation.cancel())
+      motion.removeEventListener('change', updateMotion)
+    }
+  }, [])
+
   return (
-    <section className={styles.section} aria-label="Contact methods">
+    <section ref={sectionRef} className={styles.section} aria-label="Contact methods">
       <ul className={styles.cards}>
         {methods.map(({ label, value, href, icon }) => (
           <li key={label}>

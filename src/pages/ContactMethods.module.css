@@ -54,6 +54,27 @@
 .card:hover { border-color: #edbe7b; }
 .card:focus-visible { outline: 2px solid #edbe7b; outline-offset: 5px; }
 
+@media (min-width: 1101px) {
+  .section {
+    max-width: none;
+    padding: 0;
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  .cards { max-width: none; gap: clamp(10px, .95vw, 15px); }
+  .card {
+    grid-template-columns: clamp(48px, 4.15vw, 64px) minmax(0, 1fr) 20px;
+    gap: clamp(16px, 1.6vw, 25px);
+    min-height: clamp(67px, 5.35vw, 82px);
+    padding: clamp(10px, .9vw, 14px) clamp(16px, 1.6vw, 25px);
+  }
+  .icon { min-height: clamp(40px, 3.25vw, 50px); }
+  .icon svg { width: clamp(28px, 2.2vw, 34px); height: clamp(28px, 2.2vw, 34px); }
+  .label { font-size: clamp(8px, .65vw, 10px); }
+  .value { font-size: clamp(13px, 1.1vw, 17px); }
+}
+
 @media (max-width: 680px) {
   .section { padding: 30px 5% 36px; }
   .cards { max-width: none; gap: 13px; }

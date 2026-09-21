@@ -5,7 +5,7 @@ const links = [
   { label: 'Home', href: '#home' },
   { label: 'About', href: '/about' },
   { label: 'Projects', href: '#projects' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' }) {

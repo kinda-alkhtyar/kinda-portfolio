@@ -35,6 +35,22 @@
 .scene img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .caption { position: absolute; right: 3%; bottom: 50px; margin: 0; padding-left: 12px; border-left: 1px solid #8b5b2e; font-size: 10px; line-height: 1.8; letter-spacing: 2px; text-transform: uppercase; }
 
+@media (min-width: 1101px) {
+  .section {
+    display: grid;
+    grid-template-columns: 38% 62%;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+    border-bottom: 0;
+    background: transparent;
+  }
+  .invitation { align-self: end; padding-right: 28px; }
+  .services { align-self: end; margin: 0; }
+  .scene,
+  .caption { display: none; }
+}
+
 @media (max-width: 1000px) {
   .section { grid-template-columns: 70% 30%; gap: 26px 0; min-height: 310px; padding-block: 34px; }
   .invitation { align-self: end; }
