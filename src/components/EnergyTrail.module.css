@@ -90,3 +90,17 @@
   opacity: 0;
   filter: drop-shadow(0 0 4px #ff4038);
 }
+
+@media (max-width: 1024px), (hover: none) {
+  .glow,
+  .sourceGlow,
+  .particle,
+  .sourceParticle,
+  .code:nth-of-type(n+3) {
+    display: none;
+  }
+
+  .heroPulse {
+    filter: none;
+  }
+}

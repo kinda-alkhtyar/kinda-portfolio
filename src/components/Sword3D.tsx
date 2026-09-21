@@ -86,6 +86,10 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     const originalPlayState = anchor?.style.animationPlayState ?? ''
     const boundaries = [0, 0.25, 0.5, 0.75, 1]
     const paths = new Map<SVGPathElement, { data: string; raw: ReturnType<typeof MotionPathPlugin.getRawPath> }>()
+    const railPaths = ['[data-hero-project01-path]', '[data-sword-rail="project02"]', '[data-sword-rail="project03"]', '[data-sword-rail="cta"]']
+      .map((selector) => stage?.querySelector<SVGPathElement>(selector))
+    const projectedCenter = new Vector3()
+    const viewportOrigin = new Vector3()
     const getPath = (path: SVGPathElement) => {
       const data = path.getAttribute('d')
       if (!data) return undefined
@@ -113,9 +117,8 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       const journey = heroSwordRuntime.state.scrollProgress
       const index = journey < boundaries[1] ? 0 : journey < boundaries[2] ? 1 : journey < boundaries[3] ? 2 : 3
       const progress = railTiming((journey - boundaries[index]) / (boundaries[index + 1] - boundaries[index]))
-      const selectors = ['[data-hero-project01-path]', '[data-sword-rail="project02"]', '[data-sword-rail="project03"]', '[data-sword-rail="cta"]']
-      const firstPath = stage?.querySelector<SVGPathElement>(selectors[0])
-      const path = stage?.querySelector<SVGPathElement>(selectors[index])
+      const firstPath = railPaths[0]
+      const path = railPaths[index]
       const matrix = path?.getScreenCTM()
       const firstMatrix = firstPath?.getScreenCTM()
       if (!path || !firstPath || !matrix || !firstMatrix) return
@@ -166,10 +169,10 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       if (index === 3 && finalPedestal && anchor && group.current?.parent) {
         const { camera, viewport, size } = getThree()
         const parent = group.current.parent
-        const center = parent.getWorldPosition(new Vector3()).project(camera)
+        const center = parent.getWorldPosition(projectedCenter).project(camera)
         const base = anchor.getBoundingClientRect()
         const pedestal = finalPedestal.getBoundingClientRect()
-        const worldHeight = viewport.getCurrentViewport(camera, new Vector3()).height
+        const worldHeight = viewport.getCurrentViewport(camera, viewportOrigin).height
         const halfHeight = 3 * parent.scale.y * size.height / worldHeight / 2
         const dockX = pedestal.left + pedestal.width / 2 - (base.left + (center.x + 1) * base.width / 2)
         const dockY = pedestal.top + pedestal.height * 0.23 - 12 - halfHeight - (base.top + (1 - center.y) * base.height / 2)
@@ -182,6 +185,10 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       if (anchor) anchor.style.animationPlayState = journey > 0 ? 'paused' : originalPlayState
     }
     let checkpoint: gsap.core.Tween | undefined
+    const updateVisibility = () => {
+      setFrameloop(active.current && !document.hidden ? 'always' : 'demand')
+      if (!document.hidden) invalidate()
+    }
     const resetCursor = () => {
       cursor.current = { x: 0, y: 0 }
       heroSwordRuntime.setMouse(0, 0)
@@ -211,7 +218,7 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
         hero.style.position = active.current ? 'relative' : originalHeroPosition
         hero.style.zIndex = active.current ? '3' : originalHeroZIndex
       }
-      setFrameloop(active.current ? 'always' : 'demand')
+      updateVisibility()
       elapsed.current = 0
       heroSwordRuntime.setIdle(active.current)
       resetCursor()
@@ -243,6 +250,7 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     }
     update()
     media.addEventListener('change', update)
+    document.addEventListener('visibilitychange', updateVisibility)
     hero?.addEventListener('pointermove', onPointerMove, { passive: true })
     hero?.addEventListener('pointerleave', resetCursor)
     window.addEventListener('blur', resetCursor)
@@ -262,6 +270,7 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       heroSwordRuntime.setMouse(0, 0)
       setFrameloop('demand')
       media.removeEventListener('change', update)
+      document.removeEventListener('visibilitychange', updateVisibility)
       hero?.removeEventListener('pointermove', onPointerMove)
       hero?.removeEventListener('pointerleave', resetCursor)
       window.removeEventListener('blur', resetCursor)
@@ -289,7 +298,8 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     // Move the render surface with the sword so its travel is not clipped by the Canvas.
     // The model's base placement and scale remain owned by ModelPlacement.
     if (surface.current) {
-      surface.current.style.translate = `${pathPose.current.x}px ${pathPose.current.y}px`
+      const translate = `${pathPose.current.x}px ${pathPose.current.y}px`
+      if (surface.current.style.translate !== translate) surface.current.style.translate = translate
     }
   })
 
@@ -365,6 +375,8 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
   useFrame(() => {
     const compile = heroSwordRuntime.state.finalCompileProgress
     const compileGlow = compile < 0.7 ? Math.sin(Math.PI * compile / 0.7) ** 2 : 0
+    const projects = heroSwordRuntime.state.projects
+    const glow = Math.max(compileGlow, projects['01'].glow, projects['02'].glow, projects['03'].glow)
     materials.forEach((material, source) => {
       if (!(material instanceof MeshStandardMaterial)) return
       if (!(source instanceof MeshStandardMaterial)) return
@@ -375,11 +387,9 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       }
       if (material.name.startsWith('Ruby')) {
         const base = source.emissive.getHex() === 0 ? 0.45 : source.emissiveIntensity
-        const glow = Math.max(compileGlow, ...Object.values(heroSwordRuntime.state.projects).map((project) => project.glow))
         material.emissiveIntensity = base * (1 + heroSwordMotion.glow * 0.75 + glow * 0.8)
       }
       if (material.name.startsWith('Crystal') || material.name.startsWith('Blade edge')) {
-        const glow = Math.max(compileGlow, ...Object.values(heroSwordRuntime.state.projects).map((project) => project.glow))
         material.emissiveIntensity = source.emissiveIntensity * (1 + heroSwordMotion.glow * 0.35 + glow * 0.4)
       }
     })

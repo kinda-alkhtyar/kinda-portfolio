@@ -1,10 +1,13 @@
-import { useLayoutEffect, useRef } from 'react'
+import { lazy, Suspense, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import Sword3D from '../components/Sword3D'
 import sword from '../assets/sword/ka-sword-with-logo.png'
 import styles from './Hero.module.css'
 import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
+
+const Sword3D = lazy(() => import('../components/Sword3D'))
+const swordFallback = <img src={sword} alt="" width={1024} height={1536}
+  style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} />
 
 const spiralBack = 'M 185 216 C 225 223 286 235 286 256 M 112 302 C 112 322 288 330 288 350 M 118 398 C 118 418 278 426 278 446 M 136 492 C 136 509 238 518 238 534'
 const spiralFront = 'M 286 256 C 286 277 112 281 112 302 M 288 350 C 288 371 118 377 118 398 M 278 446 C 278 467 136 473 136 492 M 238 534 C 238 545 211 549 195 553'
@@ -15,7 +18,11 @@ export default function Hero() {
   useLayoutEffect(() => {
     const media = gsap.matchMedia(heroRef)
 
-    media.add('(prefers-reduced-motion: no-preference)', () => {
+    media.add({
+      motion: '(prefers-reduced-motion: no-preference)',
+      compact: '(max-width: 1024px), (hover: none)',
+    }, (context) => {
+      if (!context.conditions?.motion) return
       gsap.from(
         [styles.title, styles.eyebrow, styles.button, styles.swordVisual]
           .map((className) => `.${className}`)
@@ -38,7 +45,7 @@ export default function Hero() {
         ease: 'sine.inOut',
       })
 
-      gsap.to(`.${styles.energyParticles} circle`, {
+      gsap.to(`.${styles.energyParticles} circle${context.conditions?.compact ? ':nth-child(-n+2)' : ''}`, {
         opacity: 0.25,
         y: -5,
         duration: 2.6,
@@ -100,19 +107,13 @@ export default function Hero() {
             </g>
           </svg>
           <div className={styles.swordImage} data-hero-sword-model>
-            <Sword3D
-              idleRotation
-              style={{ height: '100%' }}
-              fallback={
-                <img
-                  src={sword}
-                  alt=""
-                  width={1024}
-                  height={1536}
-                  style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
-                />
-              }
-            />
+            <Suspense fallback={swordFallback}>
+              <Sword3D
+                idleRotation
+                style={{ height: '100%' }}
+                fallback={swordFallback}
+              />
+            </Suspense>
           </div>
           <svg
             className={`${styles.energySpiral} ${styles.energyFront}`}

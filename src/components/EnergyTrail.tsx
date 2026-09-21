@@ -193,6 +193,7 @@ export default function EnergyTrail() {
     media.add({
       motion: '(prefers-reduced-motion: no-preference)',
       desktop: '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine)',
+      compact: '(max-width: 1024px), (hover: none)',
     }, (context) => {
       resetHeroSwordMotion()
       if (!context.conditions?.motion) return
@@ -246,6 +247,7 @@ export default function EnergyTrail() {
         if (desktop && segment === finalSegment) return
 
         segment.querySelectorAll('textPath').forEach((symbol, index) => {
+          if (context.conditions?.compact && index !== 0) return
           const motion = trailSymbols[index]
           gsap.to(symbol, {
             attr: { startOffset: `${motion.offset + motion.drift}%` },
@@ -296,6 +298,7 @@ export default function EnergyTrail() {
 
         // These are the existing trail symbols, released from its sword-side origin.
         svg.querySelectorAll('textPath').forEach((symbol, index) => {
+          if (context.conditions?.compact && index !== 0) return
           sequence.fromTo(symbol, { attr: { startOffset: '0%' } }, {
             attr: { startOffset: `${trailSymbols[index].offset}%` },
             duration: 0.48 + (index % 3) * 0.05,
@@ -305,6 +308,7 @@ export default function EnergyTrail() {
 
         if (sourcePath) {
           svg.querySelectorAll('circle').forEach((particle, index) => {
+            if (context.conditions?.compact) return
             const travel = { progress: 0 }
             const renderParticle = () => {
               const point = sourcePath.getPointAtLength(sourcePath.getTotalLength() * travel.progress * (0.5 + index * 0.1))

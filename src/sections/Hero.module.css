@@ -271,6 +271,28 @@
     drop-shadow(0 0 18px #b9101854);
 }
 
+@media (max-width: 1024px), (hover: none) {
+  .energyParticles circle:nth-child(n+3),
+  .energySymbols text:nth-child(n+2),
+  .energyGlow {
+    display: none;
+  }
+
+  .energySpiral {
+    filter: drop-shadow(0 0 2px #ff5148c7);
+  }
+
+  .swordAtmosphere {
+    filter: none;
+    opacity: 0.55;
+  }
+
+  .swordVisual::before {
+    filter: none;
+    opacity: 0.6;
+  }
+}
+
 .energyBack {
   opacity: 0.24;
 }
