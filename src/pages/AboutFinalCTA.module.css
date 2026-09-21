@@ -1,0 +1,85 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 1600px;
+  min-height: 240px;
+  aspect-ratio: 1024 / 240;
+  margin: 0 auto;
+  overflow: hidden;
+  border-bottom: 1px solid #8b5b2e;
+  background: radial-gradient(ellipse at 70% 65%, #45100955, transparent 53%), #030302;
+  color: #edbe7b;
+}
+
+.scene {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 30%, #000 48%, #000 90%, transparent);
+}
+
+.scene img {
+  position: absolute;
+  top: -42%;
+  right: 5%;
+  display: block;
+  width: 68%;
+  height: auto;
+}
+
+.content {
+  position: relative;
+  width: 49%;
+  padding: clamp(36px, 3.8vw, 61px) 0 clamp(30px, 3vw, 48px);
+  margin-left: 5.4%;
+}
+
+.heading {
+  margin: 0;
+  font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+  font-size: clamp(42px, 4.5vw, 72px);
+  font-weight: 500;
+  font-variant: small-caps;
+  line-height: .92;
+  letter-spacing: -.035em;
+  color: #edbe7b;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 42px;
+  margin-top: 27px;
+  padding: 11px 24px;
+  border: 1px solid #dfac80;
+  background: linear-gradient(110deg, #5d100a, #210301);
+  box-shadow: 0 0 18px #ed30152e, inset 0 0 15px #bf241329;
+  color: #e7d5bd;
+  font-size: clamp(12px, 1.2vw, 17px);
+  line-height: 1.4;
+  letter-spacing: 1px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.button > span { font-size: 21px; line-height: 1; }
+.button:focus-visible { outline: 2px solid #edbe7b; outline-offset: 5px; }
+
+@media (max-width: 800px) {
+  .content { width: 57%; }
+  .heading { font-size: 42px; }
+  .scene img { top: -16%; right: -8%; width: 80%; }
+}
+
+@media (max-width: 600px) {
+  .section { min-height: 440px; aspect-ratio: auto; }
+  .content { width: 90%; margin-left: 5%; padding: 34px 0 0; }
+  .heading { font-size: clamp(36px, 9.5vw, 48px); }
+  .button { min-height: 44px; margin-top: 22px; padding-inline: 22px; }
+  .scene { inset: 190px 0 0; mask-image: linear-gradient(transparent, #000 18%, #000 88%, transparent); }
+  .scene img { top: -5%; right: -8%; width: 120%; }
+}

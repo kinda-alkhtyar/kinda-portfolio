@@ -1,0 +1,56 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 32% 42% 26%;
+  align-items: end;
+  width: 100%;
+  max-width: 1600px;
+  min-height: 300px;
+  margin: 0 auto;
+  padding: 36px 5.3% 42px;
+  overflow: hidden;
+  border-bottom: 1px solid #8b5b2e;
+  background:
+    radial-gradient(ellipse at 83% 80%, #68160e38, transparent 40%),
+    radial-gradient(ellipse at 8% 100%, #48100722, transparent 36%),
+    #030302;
+  color: #edbe7b;
+}
+
+.invitation { display: flex; align-items: center; gap: 24px; padding-right: 25px; }
+.invitation h2 { flex-shrink: 0; margin: 0; font-size: clamp(10px, .8vw, 13px); font-weight: 400; line-height: 1.85; letter-spacing: 3px; text-transform: uppercase; }
+.invitation h2::before { display: block; width: 44px; height: 1px; margin-bottom: 12px; background: #edbe7b; content: ''; }
+.invitation a { color: inherit; text-decoration: none; }
+.invitation a:focus-visible { outline: 2px solid #edbe7b; outline-offset: 7px; }
+.rule { flex: 1; min-width: 24px; height: 1px; margin-top: 12px; background: linear-gradient(90deg, #8b5b2e33, #d8ac76); }
+
+.services { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 12px; padding: 0; list-style: none; }
+.services li { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0; padding: 0 10px; text-align: center; }
+.services li + li { border-left: 1px solid #8b5b2e26; }
+.services svg { width: 30px; height: 30px; flex-shrink: 0; }
+.services span { font-size: clamp(9px, .7vw, 11px); line-height: 1.8; letter-spacing: 1.8px; text-transform: uppercase; }
+
+.scene { position: absolute; z-index: -1; top: -18px; right: 5%; width: 20%; height: calc(100% + 28px); pointer-events: none; mask-image: linear-gradient(#000 85%, transparent); }
+.scene img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.caption { position: absolute; right: 3%; bottom: 50px; margin: 0; padding-left: 12px; border-left: 1px solid #8b5b2e; font-size: 10px; line-height: 1.8; letter-spacing: 2px; text-transform: uppercase; }
+
+@media (max-width: 1000px) {
+  .section { grid-template-columns: 70% 30%; gap: 26px 0; min-height: 310px; padding-block: 34px; }
+  .invitation { align-self: end; }
+  .services { grid-column: 1; margin-bottom: 0; }
+  .invitation h2 { font-size: 10px; letter-spacing: 2px; }
+  .scene { right: 5%; width: 25%; }
+  .caption { right: 2%; bottom: 36px; font-size: 9px; }
+}
+
+@media (max-width: 600px) {
+  .section { display: flex; flex-direction: column; align-items: stretch; gap: 28px; min-height: 590px; padding: 30px 5% 32px; }
+  .invitation { align-self: stretch; padding-right: 0; }
+  .services { width: 100%; }
+  .services li { padding-inline: 5px; gap: 9px; }
+  .services svg { width: 26px; height: 26px; }
+  .services span { font-size: 8px; letter-spacing: 1px; }
+  .scene { top: 215px; right: 20%; width: 60%; height: 350px; }
+  .caption { right: 5%; bottom: 50px; }
+}
