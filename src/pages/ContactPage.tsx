@@ -1,5 +1,5 @@
 import Navbar from '../components/Navbar'
-import sword from '../assets/contact/contact-hero-sword..png'
+import sword from '../assets/projects-page/contact-hero-sword..png'
 import styles from './ContactPage.module.css'
 import ContactMethods from './ContactMethods'
 import ContactForm from './ContactForm'

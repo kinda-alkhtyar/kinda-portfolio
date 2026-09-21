@@ -5,12 +5,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './Projects.module.css'
 import { heroSwordRuntime } from '../components/heroSwordRuntime'
 import type { SwordProjectId } from '../components/heroSwordRuntime'
-import aqaratiLaptop from '../assets/branding/aqarati-laptop-mockup.png'
-import aqaratiMobile from '../assets/branding/aqarati-mobile-mockup.png'
-import taaniqiLaptop from '../assets/branding/taaniqi-laptop-mockup.png'
-import taaniqiMobile from '../assets/branding/taaniqi-mobile-mockup.png'
-import yumnaLaptop from '../assets/branding/yumna-portfolio-laptop-mockup.png'
-import yumnaMobile from '../assets/branding/yumna-portfolio-mobile-mockup.png'
+import aqaratiLaptop from '../assets/projects-page/aqarati-laptop-mockup.png'
+import aqaratiMobile from '../assets/projects-page/aqarati-mobile-mockup.png'
+import taaniqiLaptop from '../assets/projects-page/taaniqi-laptop-mockup.png'
+import taaniqiMobile from '../assets/projects-page/taaniqi-mobile-mockup.png'
+import yumnaLaptop from '../assets/projects-page/yumna-portfolio-laptop-mockup.png'
+import yumnaMobile from '../assets/projects-page/yumna-portfolio-mobile-mockup.png'
 
 gsap.registerPlugin(ScrollTrigger)
 

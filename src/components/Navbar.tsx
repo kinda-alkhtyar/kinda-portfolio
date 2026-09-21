@@ -4,12 +4,12 @@ import logo from '../assets/projects/ka-logo.png'
 const links = [
   { label: 'Home', href: '#home' },
   { label: 'About', href: '/about' },
-  { label: 'Projects', href: '#projects' },
+  { label: 'Projects', href: '/projects' },
   { label: 'Contact', href: '/contact' },
 ]
 
-export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' }) {
-  const pageLinks = currentPage === 'contact'
+export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' | 'projects' }) {
+  const pageLinks = currentPage !== 'home'
     ? links.map((link) => ({ ...link, href: link.label === 'Contact' ? '/contact' : link.href.startsWith('#') ? `/${link.href}` : link.href }))
     : links
   return (

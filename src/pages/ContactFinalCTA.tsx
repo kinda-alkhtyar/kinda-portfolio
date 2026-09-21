@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import sword from '../assets/contact/contact-hero-sword..png'
+import sword from '../assets/projects-page/contact-hero-sword..png'
 import styles from './ContactFinalCTA.module.css'
 
 const services = [
