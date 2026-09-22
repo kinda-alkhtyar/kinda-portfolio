@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import sword from '../assets/projects-page/hero-sword-red-energy..png'
 import comingSoon from '../assets/projects-page/project-coming-soon-download..png'
@@ -18,6 +19,99 @@ const projects = [
 ]
 
 export default function ProjectsPage() {
+  const cardsRef = useRef<HTMLDivElement>(null)
+  const paginationRef = useRef<HTMLElement>(null)
+  const footerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const pagination = paginationRef.current
+    const footer = footerRef.current
+    if (!pagination || !footer) return
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const entered = new Set<Element>()
+    const animations: Animation[] = []
+    const observer = new IntersectionObserver((entries) => {
+      if (motion.matches) return
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting || entered.has(entry.target)) return
+        entered.add(entry.target)
+        observer.unobserve(entry.target)
+        // Footer children include the logo and their decorative pseudo-element lines.
+        Array.from(entry.target.children).forEach((element, index) => {
+          animations.push(element.animate([
+            { opacity: 0, translate: '0 12px' },
+            { opacity: 1, translate: '0 0' },
+          ], {
+            duration: 800,
+            delay: index * 100,
+            easing: 'cubic-bezier(.22, 1, .36, 1)',
+            fill: 'backwards',
+          }))
+        })
+      })
+    }, { threshold: 0.12 })
+
+    const updateMotion = () => {
+      if (motion.matches) {
+        observer.disconnect()
+        animations.forEach((animation) => animation.cancel())
+      } else {
+        ;[pagination, footer].forEach((element) => {
+          if (!entered.has(element)) observer.observe(element)
+        })
+      }
+    }
+    updateMotion()
+    motion.addEventListener('change', updateMotion)
+    return () => {
+      observer.disconnect()
+      animations.forEach((animation) => animation.cancel())
+      motion.removeEventListener('change', updateMotion)
+    }
+  }, [])
+
+  useEffect(() => {
+    const grid = cardsRef.current
+    if (!grid) return
+
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const animations: Animation[] = []
+    let entered = false
+    const observer = new IntersectionObserver((entries) => {
+      if (entered || motion.matches || !entries.some((entry) => entry.isIntersecting)) return
+      entered = true
+      observer.disconnect()
+      grid.querySelectorAll<HTMLElement>(`.${styles.card}`).forEach((card, index) => {
+        animations.push(card.animate([
+          { opacity: 0, translate: '0 14px' },
+          { opacity: 1, translate: '0 0' },
+        ], {
+          duration: 800,
+          delay: index * 100,
+          easing: 'cubic-bezier(.22, 1, .36, 1)',
+          fill: 'backwards',
+        }))
+      })
+    }, { threshold: 0.05 })
+
+    const updateMotion = () => {
+      if (motion.matches) {
+        observer.disconnect()
+        animations.forEach((animation) => animation.cancel())
+      } else if (!entered) {
+        observer.observe(grid)
+      }
+    }
+    updateMotion()
+    motion.addEventListener('change', updateMotion)
+    return () => {
+      observer.disconnect()
+      animations.forEach((animation) => animation.cancel())
+      motion.removeEventListener('change', updateMotion)
+    }
+  }, [])
+
   return (
     <div className={styles.page}>
       <Navbar currentPage="projects" />
@@ -41,7 +135,7 @@ export default function ProjectsPage() {
 
         <section className={styles.work} aria-labelledby="selected-work-heading">
           <h2 id="selected-work-heading" className={styles.sectionHeading}>Selected work</h2>
-          <div className={styles.grid}>
+          <div ref={cardsRef} className={styles.grid}>
             {projects.map((project) => (
               <article className={styles.card} key={project.number} aria-labelledby={`work-${project.number}`}>
                 <div className={styles.cardTop}><span>{project.number}</span><span>Website</span></div>
@@ -57,7 +151,7 @@ export default function ProjectsPage() {
               </article>
             ))}
           </div>
-          <nav className={styles.pagination} aria-label="Projects pagination (preview only)">
+          <nav ref={paginationRef} className={styles.pagination} aria-label="Projects pagination (preview only)">
             <button type="button" aria-label="Previous page" aria-disabled="true">←</button>
             <button type="button" aria-current="page" aria-disabled="true">1</button>
             <button type="button" aria-label="Page 2" aria-disabled="true">2</button>
@@ -66,7 +160,7 @@ export default function ProjectsPage() {
           </nav>
         </section>
       </main>
-      <footer className={styles.footer}>
+      <footer ref={footerRef} className={styles.footer}>
         <p>Let’s<br />build a brighter<br />tomorrow.</p>
         <div className={styles.footerMark}><img src={logo} alt="KA" width={1536} height={1024} /></div>
         <blockquote>“Better digital experiences for a brighter tomorrow.”</blockquote>

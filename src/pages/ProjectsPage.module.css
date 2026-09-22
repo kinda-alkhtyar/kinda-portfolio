@@ -7,6 +7,38 @@
 }
 
 .page * { box-sizing: border-box; }
+
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroSwordEnter {
+  from { opacity: 0; transform: translateY(10px) scale(1.025); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero .eyebrow,
+  .hero .heading,
+  .hero .subtitle,
+  .hero .filters button,
+  .hero .verticalWords {
+    animation: heroEnter 800ms cubic-bezier(.22, 1, .36, 1) backwards;
+  }
+
+  .hero .eyebrow { animation-delay: 80ms; }
+  .hero .heading { animation-delay: 180ms; }
+  .hero .subtitle { animation-delay: 280ms; }
+  .hero .filters button:nth-child(1) { animation-delay: 380ms; }
+  .hero .filters button:nth-child(2) { animation-delay: 450ms; }
+  .hero .filters button:nth-child(3) { animation-delay: 520ms; }
+  .hero .verticalWords { animation-delay: 620ms; }
+  .hero .scene img {
+    animation: heroSwordEnter 1400ms cubic-bezier(.22, 1, .36, 1) 200ms backwards;
+  }
+}
+
 .page main { max-width: 1600px; margin: 0 auto; }
 .hero {
   position: relative;
