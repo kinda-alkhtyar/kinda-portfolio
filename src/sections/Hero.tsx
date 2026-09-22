@@ -6,6 +6,7 @@ import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
 
 const Sword3D = lazy(() => import('../components/Sword3D'))
+const CompanionSword3D = lazy(() => import('../components/CompanionSword3D'))
 const swordFallback = <img src={sword} alt="" width={1024} height={1536}
   style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} />
 
@@ -83,9 +84,18 @@ export default function Hero() {
           </div>
         </div>
 
+        <div className={styles.companionSword} aria-hidden="true">
+          <Suspense fallback={null}>
+            <CompanionSword3D />
+          </Suspense>
+        </div>
+
         <div className={styles.swordVisual} data-energy-sword aria-hidden="true">
           <img className={styles.pedestalImage} src={pedestal} alt="" width={1774} height={887} />
           <div className={styles.swordAtmosphere} />
+          <div className={`${styles.depthParticles} ${styles.depthParticlesBack}`}>
+            {Array.from({ length: 6 }, (_, index) => <i key={index} />)}
+          </div>
           <svg
             className={`${styles.energySpiral} ${styles.energyBack}`}
             viewBox="0 0 400 600"
@@ -114,6 +124,9 @@ export default function Hero() {
                 fallback={swordFallback}
               />
             </Suspense>
+          </div>
+          <div className={`${styles.depthParticles} ${styles.depthParticlesFront}`}>
+            {Array.from({ length: 3 }, (_, index) => <i key={index} />)}
           </div>
           <svg
             className={`${styles.energySpiral} ${styles.energyFront}`}

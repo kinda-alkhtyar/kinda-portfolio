@@ -1,11 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap');
 
 .hero {
+  --atmosphere-x: 76%;
+  --atmosphere-y: 48%;
+  --pedestal-haze-y: 86%;
+  position: relative;
   background:
-    radial-gradient(ellipse at 78% 58%, #681b121c, transparent 48%),
-    linear-gradient(180deg, #090807, #080707);
+    radial-gradient(ellipse 85% 80% at 50% 45%, transparent 35%, #00000099 100%),
+    linear-gradient(90deg, #030303cc, transparent 58%),
+    radial-gradient(ellipse 28% 46% at var(--atmosphere-x) var(--atmosphere-y), #791b1833, #340c101a 56%, transparent 85%),
+    radial-gradient(ellipse 45% 15% at 68% 78%, #9c66500a, transparent 85%),
+    linear-gradient(180deg, #030303, #080606 64%, #080707);
   color: #f3ede2;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.hero::before {
+  position: absolute;
+  inset: 4%;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    radial-gradient(ellipse 15% 35% at var(--atmosphere-x) var(--atmosphere-y), #a823201c, transparent 80%),
+    radial-gradient(ellipse 18% 4% at var(--atmosphere-x) var(--pedestal-haze-y), #d4a05c24, transparent 85%),
+    radial-gradient(ellipse 6% 22% at 88% 62%, #c7794010, transparent 80%);
+  filter: blur(24px);
 }
 
 .container {
@@ -25,6 +45,21 @@
 .content {
   min-width: 0;
   max-width: 600px;
+}
+
+.companionSword {
+  position: absolute;
+  top: 29%;
+  left: 50%;
+  z-index: 2;
+  width: 128px;
+  height: 190px;
+  pointer-events: none;
+}
+
+.companionSword canvas {
+  display: block;
+  background: transparent;
 }
 
 .eyebrow {
@@ -272,6 +307,10 @@
 }
 
 @media (max-width: 1024px), (hover: none) {
+  .companionSword {
+    display: none;
+  }
+
   .energyParticles circle:nth-child(n+3),
   .energySymbols text:nth-child(n+2),
   .energyGlow {
@@ -295,6 +334,59 @@
 
 .energyBack {
   opacity: 0.24;
+}
+
+.depthParticles {
+  position: absolute;
+  inset: 4% 10% 12%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.depthParticles i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e8b77d 0%, #c1553870 38%, transparent 75%);
+  opacity: 0.2;
+  filter: blur(0.6px);
+}
+
+.depthParticles i:nth-child(1) { left: 22%; top: 25%; }
+.depthParticles i:nth-child(2) { left: 74%; top: 42%; width: 6px; height: 6px; filter: blur(1.2px); }
+.depthParticles i:nth-child(3) { left: 35%; top: 68%; opacity: 0.14; }
+.depthParticles i:nth-child(4) { left: 65%; top: 16%; width: 3px; height: 3px; }
+.depthParticles i:nth-child(5) { left: 82%; top: 76%; width: 7px; height: 7px; filter: blur(1.6px); opacity: 0.13; }
+.depthParticles i:nth-child(6) { left: 12%; top: 53%; }
+
+.depthParticlesFront i {
+  width: 8px;
+  height: 8px;
+  filter: blur(1.4px);
+  opacity: 0.16;
+  background: radial-gradient(circle, #ed8962 0%, #b72b2870 35%, transparent 75%);
+}
+
+.depthParticlesFront i:nth-child(1) { left: 47%; top: 32%; }
+.depthParticlesFront i:nth-child(2) { left: 55%; top: 70%; width: 10px; height: 10px; filter: blur(2px); }
+.depthParticlesFront i:nth-child(3) { left: 30%; top: 51%; }
+
+@keyframes depthParticleDrift {
+  from { transform: translate(-5px, 9px); }
+  to { transform: translate(7px, -12px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .depthParticles i { animation: depthParticleDrift 19s ease-in-out infinite alternate; }
+  .depthParticles i:nth-child(2n) { animation-duration: 24s; animation-delay: -11s; }
+  .depthParticles i:nth-child(3n) { animation-duration: 28s; animation-delay: -18s; }
+  .depthParticlesFront i { animation-duration: 16s; animation-delay: -7s; }
+}
+
+@media (max-width: 1024px), (hover: none) {
+  .depthParticlesBack i:nth-child(n+4),
+  .depthParticlesFront i:nth-child(n+2) { display: none; }
 }
 
 .energyFront {
@@ -330,6 +422,17 @@
 }
 
 @media (max-width: 680px) {
+  .hero {
+    --atmosphere-x: 50%;
+    --atmosphere-y: 73%;
+    --pedestal-haze-y: 94%;
+  }
+
+  .hero::before {
+    filter: blur(16px);
+    opacity: 0.75;
+  }
+
   .actions {
     flex-direction: column;
     align-items: stretch;

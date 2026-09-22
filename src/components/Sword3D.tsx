@@ -2,7 +2,7 @@ import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useSt
 import type { CSSProperties, ReactNode } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Bounds, Center, Clone, Environment, Lightformer, Resize, useBounds, useGLTF } from '@react-three/drei'
-import { ACESFilmicToneMapping, Box3, Mesh, MeshStandardMaterial, Scene, Vector3 } from 'three'
+import { ACESFilmicToneMapping, Box3, Mesh, MeshStandardMaterial, Quaternion, Scene, Vector3 } from 'three'
 import type { Group, Material } from 'three'
 import swordUrl from '../assets/models/Royal_Flameblade_Review.glb?url'
 import { heroSwordMotion } from './heroSwordMotion'
@@ -10,9 +10,8 @@ import { heroSwordRuntime } from './heroSwordRuntime'
 import { finalCompileStart, railTiming } from './heroSwordTiming'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
 
-gsap.registerPlugin(ScrollTrigger, MotionPathPlugin)
+gsap.registerPlugin(ScrollTrigger)
 
 export type Sword3DProps = {
   className?: string
@@ -56,14 +55,11 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
   const elapsed = useRef(0)
   const cursor = useRef({ x: 0, y: 0 })
   const tilt = useRef({ x: 0, y: 0 })
-  const pathPose = useRef({ x: 0, y: 0, bank: 0, pitch: 0, depth: 0, flightTilt: 0 })
   const samplePath = useRef<(() => void) | null>(null)
   const surface = useRef<HTMLElement | null>(null)
   const invalidate = useThree((state) => state.invalidate)
   const setFrameloop = useThree((state) => state.setFrameloop)
   const canvas = useThree((state) => state.gl.domElement)
-  const getThree = useThree((state) => state.get)
-  const finalSettle = useRef(0)
 
   useEffect(() => {
     const media = window.matchMedia(
@@ -75,7 +71,6 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     const checkpoints = [project,
       stage?.querySelector<HTMLElement>('article[aria-labelledby="project-02"]'),
       stage?.querySelector<HTMLElement>('article[aria-labelledby="project-03"]')]
-    const finalPedestal = stage?.querySelector<HTMLElement>('[data-sword-final-pedestal]')
     const finalPlaceholder = stage?.querySelector<HTMLElement>('[data-sword-final-placeholder]')
     const originalPlaceholderDisplay = finalPlaceholder?.style.display ?? ''
     const originalHeroZIndex = hero?.style.zIndex ?? ''
@@ -85,23 +80,6 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     const originalTranslate = surface.current?.style.translate ?? ''
     const originalPlayState = anchor?.style.animationPlayState ?? ''
     const boundaries = [0, 0.25, 0.5, 0.75, 1]
-    const paths = new Map<SVGPathElement, { data: string; raw: ReturnType<typeof MotionPathPlugin.getRawPath> }>()
-    const railPaths = ['[data-hero-project01-path]', '[data-sword-rail="project02"]', '[data-sword-rail="project03"]', '[data-sword-rail="cta"]']
-      .map((selector) => stage?.querySelector<SVGPathElement>(selector))
-    const projectedCenter = new Vector3()
-    const viewportOrigin = new Vector3()
-    const getPath = (path: SVGPathElement) => {
-      const data = path.getAttribute('d')
-      if (!data) return undefined
-      let cached = paths.get(path)
-      if (cached?.data !== data) {
-        const raw = MotionPathPlugin.getRawPath(data)
-        MotionPathPlugin.cacheRawPathMeasurements(raw, 32)
-        cached = { data, raw }
-        paths.set(path, cached)
-      }
-      return cached?.raw
-    }
     const measureJourney = () => {
       if (!hero) return
       const start = hero.getBoundingClientRect().top + window.scrollY
@@ -113,76 +91,13 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
         boundaries[index + 1] = Math.max(boundaries[index] + 0.001, Math.min(0.997 + index * 0.001, (at - start) / distance))
       })
     }
+    // Keep scroll checkpoints for project/energy effects, without moving the Hero model.
     samplePath.current = () => {
       const journey = heroSwordRuntime.state.scrollProgress
       const index = journey < boundaries[1] ? 0 : journey < boundaries[2] ? 1 : journey < boundaries[3] ? 2 : 3
       const progress = railTiming((journey - boundaries[index]) / (boundaries[index + 1] - boundaries[index]))
-      const firstPath = railPaths[0]
-      const path = railPaths[index]
-      const matrix = path?.getScreenCTM()
-      const firstMatrix = firstPath?.getScreenCTM()
-      if (!path || !firstPath || !matrix || !firstMatrix) return
-      const rawPath = getPath(path)
-      const firstRaw = getPath(firstPath)
-      if (!rawPath || !firstRaw) return
-      // Scroll owns the complete flight pose: reversing retraces it exactly.
-      const railProgress = progress * progress * (3 - 2 * progress)
-      const envelope = Math.sin(Math.PI * progress) ** 2
-      const start = MotionPathPlugin.getPositionOnPath(firstRaw, 0, true) as { x: number; y: number; angle: number }
-      const point = MotionPathPlugin.getPositionOnPath(rawPath, railProgress, true) as { x: number; y: number; angle: number }
-      const before = MotionPathPlugin.getPositionOnPath(rawPath, Math.max(0, railProgress - 0.045), true) as { angle: number }
-      const ahead = MotionPathPlugin.getPositionOnPath(rawPath, Math.min(1, railProgress + 0.045), true) as { angle: number }
-      const turnAngle = (ahead.angle - before.angle) * Math.PI / 180
-      const curvature = Math.atan2(Math.sin(turnAngle), Math.cos(turnAngle))
-      // A symmetric look-ahead/behind window anticipates turns in either scroll direction.
-      const bank = Math.tanh(curvature * 1.7) * 0.3 * envelope
-      const heading = point.angle * Math.PI / 180
-      const tangentX = matrix.a * Math.cos(heading) + matrix.c * Math.sin(heading)
-      const tangentY = matrix.b * Math.cos(heading) + matrix.d * Math.sin(heading)
-      const tangentLength = Math.hypot(tangentX, tangentY) || 1
-      const tx = tangentX / tangentLength
-      const ty = tangentY / tangentLength
-      const lateral = (18 * Math.sin(progress * Math.PI * 3) - bank * 22) * envelope
-      // A small tangent overshoot crests near arrival and settles exactly at progress 1.
-      const arrival = Math.max(0, (progress - 0.82) / 0.18)
-      const overshoot = Math.sin(Math.PI * arrival) ** 2 * 14
-      const dx = matrix.a * point.x + matrix.c * point.y + matrix.e - (firstMatrix.a * start.x + firstMatrix.c * start.y + firstMatrix.e)
-      const dy = matrix.b * point.x + matrix.d * point.y + matrix.f - (firstMatrix.b * start.x + firstMatrix.d * start.y + firstMatrix.f)
-      // Keep the existing curve as a guide, adding only a restrained flight offset.
-      pathPose.current = {
-        x: dx - ty * lateral + tx * overshoot,
-        y: dy + tx * lateral + ty * overshoot,
-        bank,
-        // Peak at 40 degrees mid-segment; settle upright at both checkpoints.
-        // Segment-based direction retraces identically when scrolling backward.
-        flightTilt: (index % 2 === 0 ? -1 : 1) * (40 * Math.PI / 180) * envelope,
-        pitch: Math.sin(progress * Math.PI * 2) * envelope * 0.09 - bank * 0.25,
-        depth: Math.sin(progress * Math.PI * 2) * envelope * 0.12,
-      }
-      finalSettle.current = index === 3 ? railProgress : 0
       const compile = index === 3 ? Math.max(0, (progress - finalCompileStart) / (1 - finalCompileStart)) : 0
       heroSwordRuntime.setFinalProgress(index === 3 ? progress : 0, compile)
-      const upright = compile * compile * (3 - 2 * compile)
-      pathPose.current.bank *= 1 - upright
-      pathPose.current.pitch *= 1 - upright
-      pathPose.current.flightTilt *= 1 - upright
-      if (index === 3 && finalPedestal && anchor && group.current?.parent) {
-        const { camera, viewport, size } = getThree()
-        const parent = group.current.parent
-        const center = parent.getWorldPosition(projectedCenter).project(camera)
-        const base = anchor.getBoundingClientRect()
-        const pedestal = finalPedestal.getBoundingClientRect()
-        const worldHeight = viewport.getCurrentViewport(camera, viewportOrigin).height
-        const halfHeight = 3 * parent.scale.y * size.height / worldHeight / 2
-        const dockX = pedestal.left + pedestal.width / 2 - (base.left + (center.x + 1) * base.width / 2)
-        const dockY = pedestal.top + pedestal.height * 0.23 - 12 - halfHeight - (base.top + (1 - center.y) * base.height / 2)
-        const endPoint = MotionPathPlugin.getPositionOnPath(rawPath, 1) as { x: number; y: number }
-        const endX = matrix.a * endPoint.x + matrix.c * endPoint.y + matrix.e - (firstMatrix.a * start.x + firstMatrix.c * start.y + firstMatrix.e)
-        const endY = matrix.b * endPoint.x + matrix.d * endPoint.y + matrix.f - (firstMatrix.b * start.x + firstMatrix.d * start.y + firstMatrix.f)
-        pathPose.current.x += (dockX - endX) * railProgress
-        pathPose.current.y += (dockY - endY) * railProgress
-      }
-      if (anchor) anchor.style.animationPlayState = journey > 0 ? 'paused' : originalPlayState
     }
     let checkpoint: gsap.core.Tween | undefined
     const updateVisibility = () => {
@@ -195,6 +110,10 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     }
     const onPointerMove = (event: PointerEvent) => {
       if (!active.current || event.pointerType !== 'mouse' || !hero) return
+      if (heroSwordRuntime.state.scrollProgress > 0) {
+        resetCursor()
+        return
+      }
       const bounds = hero.getBoundingClientRect()
       if (!bounds.width || !bounds.height) return
       cursor.current = {
@@ -253,6 +172,7 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     document.addEventListener('visibilitychange', updateVisibility)
     hero?.addEventListener('pointermove', onPointerMove, { passive: true })
     hero?.addEventListener('pointerleave', resetCursor)
+    hero?.addEventListener('pointercancel', resetCursor)
     window.addEventListener('blur', resetCursor)
     return () => {
       checkpoint?.scrollTrigger?.kill()
@@ -273,9 +193,10 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
       document.removeEventListener('visibilitychange', updateVisibility)
       hero?.removeEventListener('pointermove', onPointerMove)
       hero?.removeEventListener('pointerleave', resetCursor)
+      hero?.removeEventListener('pointercancel', resetCursor)
       window.removeEventListener('blur', resetCursor)
     }
-  }, [enabled, invalidate, setFrameloop, canvas, getThree])
+  }, [enabled, invalidate, setFrameloop, canvas])
 
   useFrame((_, delta) => {
     if (!active.current || !group.current) return
@@ -284,23 +205,20 @@ function IdleRotation({ enabled, children }: { enabled: boolean; children: React
     elapsed.current += step
     heroSwordRuntime.setIdle(true, elapsed.current)
     const damping = 1 - Math.exp(-4 * step)
-    // Cursor tilt is limited to 2 degrees vertically and 3 degrees horizontally.
-    tilt.current.x += (cursor.current.y * Math.PI / 90 - tilt.current.x) * damping
-    tilt.current.y += (cursor.current.x * Math.PI / 60 - tilt.current.y) * damping
     const progress = heroSwordRuntime.state.scrollProgress
+    // Pointer input belongs only to the neutral Hero pose, never the scroll journey.
+    const pointerWeight = progress === 0 ? 1 : 0
+    // Cursor tilt is limited to 2 degrees vertically and 3 degrees horizontally.
+    tilt.current.x += (cursor.current.y * Math.PI / 90 * pointerWeight - tilt.current.x) * damping
+    tilt.current.y += (cursor.current.x * Math.PI / 60 * pointerWeight - tilt.current.y) * damping
     samplePath.current?.()
     heroSwordRuntime.state.isScrollActive = progress > 0 && progress < 1 && ScrollTrigger.isScrolling()
-    const idleWeight = (1 - Math.min(1, progress * 12) * 0.85) * (1 - finalSettle.current)
-    group.current.rotation.x = tilt.current.x * idleWeight + pathPose.current.pitch
-    group.current.rotation.y = (Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y) * idleWeight + pathPose.current.bank * 0.4
-    group.current.rotation.z = pathPose.current.flightTilt
-    group.current.position.z = pathPose.current.depth
-    // Move the render surface with the sword so its travel is not clipped by the Canvas.
-    // The model's base placement and scale remain owned by ModelPlacement.
-    if (surface.current) {
-      const translate = `${pathPose.current.x}px ${pathPose.current.y}px`
-      if (surface.current.style.translate !== translate) surface.current.style.translate = translate
-    }
+    // Only idle and pointer rotation affect the sword; placement stays above the pedestal.
+    group.current.rotation.x = tilt.current.x
+    group.current.rotation.y = Math.sin(elapsed.current * Math.PI / 6) * Math.PI / 60 + tilt.current.y
+    group.current.rotation.z = 0
+    group.current.position.set(0, 0, 0)
+
   })
 
   return <group ref={group}>{children}</group>
@@ -311,24 +229,94 @@ function ModelPlacement({ bounds, children }: { bounds: Box3; children: ReactNod
   const size = useThree((state) => state.size)
   const group = useRef<Group>(null)
   const origin = useMemo(() => new Vector3(), [])
+  const camera = useThree((state) => state.camera)
+  const invalidate = useThree((state) => state.invalidate)
+  const reveal = useRef({ elapsed: 0, enabled: false })
+  const orbit = useMemo(() => ({
+    position: new Vector3(),
+    orientation: new Quaternion(),
+    yaw: new Quaternion(),
+    axis: new Vector3(0, 1, 0),
+    captured: false,
+    angle: 0,
+  }), [])
+
+  useEffect(() => {
+    const motion = window.matchMedia('(prefers-reduced-motion: no-preference)')
+    const update = () => {
+      reveal.current.enabled = motion.matches
+      if (!motion.matches) reveal.current.elapsed = 2.6
+      invalidate()
+    }
+    update()
+    motion.addEventListener('change', update)
+    return () => motion.removeEventListener('change', update)
+  }, [invalidate])
 
   useLayoutEffect(() => {
+    if (orbit.captured) {
+      camera.position.copy(orbit.position)
+      camera.quaternion.copy(orbit.orientation)
+      camera.updateMatrixWorld()
+    }
+    orbit.captured = false
+    orbit.angle = 0
     // Fit the original normalized bounds, so fitting cannot undo the model-only scale.
     fit.refresh(bounds).fit().clip()
-  }, [fit, bounds, size.width, size.height])
+    return () => {
+      if (orbit.captured) {
+        camera.position.copy(orbit.position)
+        camera.quaternion.copy(orbit.orientation)
+        camera.updateMatrixWorld()
+      }
+      orbit.captured = false
+    }
+  }, [fit, bounds, size.width, size.height, camera, orbit])
 
-  useFrame(({ camera, viewport, size }) => {
+  useFrame(({ camera, viewport, size }, delta) => {
+    if (!orbit.captured) {
+      orbit.position.copy(camera.position)
+      orbit.orientation.copy(camera.quaternion)
+      orbit.captured = true
+    }
+    // Reuse the motion-aware idle clock; no new loop, scroll input, or model movement.
+    const idle = heroSwordRuntime.state.idle
+    const target = idle.enabled ? Math.sin(idle.elapsed * Math.PI / 12) * Math.PI / 180 : 0
+    orbit.angle = idle.enabled
+      ? orbit.angle + (target - orbit.angle) * (1 - Math.exp(-2 * Math.min(delta, 0.05)))
+      : 0
+    // One entrance per mount, independent of scroll and resize. Smoothstep brings
+    // the full model turn to rest while the nested idle/parallax motion continues.
+    if (reveal.current.enabled && reveal.current.elapsed < 2.6 && !document.hidden) {
+      reveal.current.elapsed = Math.min(2.6, reveal.current.elapsed + Math.min(delta, 0.05))
+      invalidate()
+    }
+    const progress = reveal.current.enabled ? reveal.current.elapsed / 2.6 : 1
+    const eased = progress * progress * (3 - 2 * progress)
+    const revealAngle = -(25 * Math.PI / 180) * (1 - eased)
+    const distance = 1 + 0.12 * (1 - eased)
+    orbit.yaw.setFromAxisAngle(orbit.axis, revealAngle + orbit.angle * eased)
+    camera.position.copy(orbit.position).multiplyScalar(distance).applyQuaternion(orbit.yaw)
+    camera.quaternion.copy(orbit.orientation).premultiply(orbit.yaw)
+    camera.updateMatrixWorld()
     if (group.current && size.height > 0) {
+      // A complete turn is visually identical to zero; clear it after settling.
+      group.current.rotation.y = progress < 1 ? Math.PI * 2 * eased : 0
       const worldHeight = viewport.getCurrentViewport(camera, origin).height
       group.current.position.y = -22 * worldHeight / size.height
     }
   })
-return <group ref={group} scale={1.806}>{children}</group>
+return <group ref={group} scale={1.32177528}>{children}</group>
 }
 
 function SwordModel({ idleRotation }: { idleRotation: boolean }) {
   const { scene } = useGLTF(swordUrl)
   const goldReflectionScene = useMemo(() => new Scene(), [])
+  const heroLight = useMemo(() => ({
+    presence: { value: 0 },
+    sweep: { value: 0 },
+    sweepPosition: { value: -4 },
+  }), [])
   const { model, materials } = useMemo(() => {
     // Preserve authored textures and physical properties on private material copies.
     const model = scene.clone(true)
@@ -338,6 +326,27 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       if (existing) return existing
       const material = source.clone()
       materials.set(source, material)
+
+      if (material instanceof MeshStandardMaterial) {
+        // View-space normals keep the restrained edge sheen responsive to camera angle.
+        material.onBeforeCompile = (shader) => {
+          shader.uniforms.heroPresence = heroLight.presence
+          shader.uniforms.heroSweep = heroLight.sweep
+          shader.uniforms.heroSweepPosition = heroLight.sweepPosition
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <common>',
+            '#include <common>\nuniform float heroPresence;\nuniform float heroSweep;\nuniform float heroSweepPosition;',
+          ).replace('#include <opaque_fragment>', `
+            float heroEdge = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 3.0);
+            float heroBandDistance = (vViewPosition.x + vViewPosition.y * 0.25 - heroSweepPosition) / 0.38;
+            float heroBand = exp(-heroBandDistance * heroBandDistance);
+            outgoingLight += vec3(1.0, 0.84, 0.62) * heroPresence
+              * (heroEdge * 0.055 + heroBand * heroSweep * 0.07);
+            #include <opaque_fragment>
+          `)
+        }
+        material.customProgramCacheKey = () => 'hero-sword-sheen-v1'
+      }
 
       if (material instanceof MeshStandardMaterial && material.name.startsWith('Gold')) {
         // Lift studio reflections only; retain the GLB's color, metalness, roughness,
@@ -362,7 +371,7 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       }
     })
     return { model, materials }
-  }, [scene])
+  }, [scene, heroLight])
 
   const framingBounds = useMemo(() => {
     const size = new Box3().setFromObject(model).getSize(new Vector3())
@@ -373,6 +382,15 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials])
 
   useFrame(() => {
+    // Reuse the existing idle clock: no extra render loop or motion for reduced motion.
+    const runtime = heroSwordRuntime.state
+    const heroWeight = idleRotation ? Math.max(0, 1 - runtime.scrollProgress * 40) : 0
+    heroLight.presence.value = heroWeight
+    const sweepPhase = runtime.idle.elapsed % 7
+    const sweepProgress = Math.min(1, sweepPhase / 2.4)
+    heroLight.sweep.value = runtime.idle.enabled && sweepPhase < 2.4
+      ? Math.sin(sweepProgress * Math.PI) ** 2 : 0
+    heroLight.sweepPosition.value = -4 + sweepProgress * 8
     const compile = heroSwordRuntime.state.finalCompileProgress
     const compileGlow = compile < 0.7 ? Math.sin(Math.PI * compile / 0.7) ** 2 : 0
     const projects = heroSwordRuntime.state.projects
@@ -380,6 +398,9 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
     materials.forEach((material, source) => {
       if (!(material instanceof MeshStandardMaterial)) return
       if (!(source instanceof MeshStandardMaterial)) return
+      if (material.name.startsWith('Gold')) {
+        material.envMapIntensity = source.envMapIntensity * (1.35 + heroWeight * 0.15)
+      }
       if (material.name.startsWith('Gold') && goldReflectionScene.environment
         && material.envMap !== goldReflectionScene.environment) {
         material.envMap = goldReflectionScene.environment
