@@ -47,21 +47,6 @@
   max-width: 600px;
 }
 
-.companionSword {
-  position: absolute;
-  top: 29%;
-  left: 50%;
-  z-index: 2;
-  width: 128px;
-  height: 190px;
-  pointer-events: none;
-}
-
-.companionSword canvas {
-  display: block;
-  background: transparent;
-}
-
 .eyebrow {
   margin: 12px 0 20px;
   color: #b9b2a9;
@@ -307,10 +292,6 @@
 }
 
 @media (max-width: 1024px), (hover: none) {
-  .companionSword {
-    display: none;
-  }
-
   .energyParticles circle:nth-child(n+3),
   .energySymbols text:nth-child(n+2),
   .energyGlow {

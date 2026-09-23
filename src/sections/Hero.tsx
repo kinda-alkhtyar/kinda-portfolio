@@ -6,7 +6,6 @@ import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
 
 const Sword3D = lazy(() => import('../components/Sword3D'))
-const CompanionSword3D = lazy(() => import('../components/CompanionSword3D'))
 const swordFallback = <img src={sword} alt="" width={1024} height={1536}
   style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }} />
 
@@ -82,12 +81,6 @@ export default function Hero() {
               Let's work together
             </a>
           </div>
-        </div>
-
-        <div className={styles.companionSword} aria-hidden="true">
-          <Suspense fallback={null}>
-            <CompanionSword3D />
-          </Suspense>
         </div>
 
         <div className={styles.swordVisual} data-energy-sword aria-hidden="true">

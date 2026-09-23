@@ -18,6 +18,7 @@ export type Sword3DProps = {
   style?: CSSProperties
   fallback?: ReactNode
   idleRotation?: boolean
+  variant?: 'hero' | 'cta'
 }
 
 const transparentSurface: CSSProperties = {
@@ -309,7 +310,46 @@ function ModelPlacement({ bounds, children }: { bounds: Box3; children: ReactNod
 return <group ref={group} scale={1.32177528}>{children}</group>
 }
 
-function SwordModel({ idleRotation }: { idleRotation: boolean }) {
+function CtaPlacement({ children }: { children: ReactNode }) {
+  const group = useRef<Group>(null)
+  const origin = useMemo(() => new Vector3(), [])
+  const { setFrameloop, invalidate } = useThree()
+  const rotating = useRef(false)
+  const rotationTime = useRef({ elapsed: 0, started: 0 })
+  useEffect(() => {
+    const motion = matchMedia('(prefers-reduced-motion: no-preference)')
+    const update = () => {
+      const now = performance.now()
+      if (rotating.current) rotationTime.current.elapsed += (now - rotationTime.current.started) / 1000
+      rotationTime.current.started = now
+      rotating.current = motion.matches && !document.hidden
+      setFrameloop(rotating.current ? 'always' : 'demand')
+      invalidate()
+    }
+    motion.addEventListener('change', update)
+    document.addEventListener('visibilitychange', update)
+    update()
+    return () => {
+      if (rotating.current) rotationTime.current.elapsed += (performance.now() - rotationTime.current.started) / 1000
+      rotating.current = false
+      motion.removeEventListener('change', update)
+      document.removeEventListener('visibilitychange', update)
+      setFrameloop('demand')
+    }
+  }, [setFrameloop, invalidate])
+  useFrame(({ camera, viewport, size }) => {
+    if (group.current && size.height > 0) {
+      group.current.position.y = 10 * viewport.getCurrentViewport(camera, origin).height / size.height
+    }
+    if (rotating.current && group.current) {
+      const seconds = rotationTime.current.elapsed + (performance.now() - rotationTime.current.started) / 1000
+      group.current.rotation.y = (seconds % 9) * Math.PI * 2 / 9
+    }
+  })
+    return <group ref={group} scale={1.4}>{children}</group>
+}
+
+function SwordModel({ idleRotation, variant }: { idleRotation: boolean; variant: 'hero' | 'cta' }) {
   const { scene } = useGLTF(swordUrl)
   const goldReflectionScene = useMemo(() => new Scene(), [])
   const heroLight = useMemo(() => ({
@@ -379,6 +419,12 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
     return new Box3().setFromCenterAndSize(new Vector3(), size)
   }, [model])
 
+  const ctaGeometry = useMemo(() => {
+    const box = new Box3().setFromObject(model)
+    const size = box.getSize(new Vector3())
+    return { scale: 3 / Math.max(size.x, size.y, size.z), center: box.getCenter(new Vector3()).negate() }
+  }, [model])
+
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials])
 
   useFrame(() => {
@@ -425,7 +471,14 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
       <Lightformer position={[-4, 2, 2]} target={[0, 0, 0]} scale={[2, 5]} color="#dce6ff" intensity={1} />
       <Lightformer position={[4, 3, -2]} target={[0, 0, 0]} scale={[2, 4]} color="#ffd59b" intensity={1.6} />
     </Environment>
-    <Bounds margin={1.2} maxDuration={0}>
+      {variant === 'cta' ? (
+        <CtaPlacement>
+          <group scale={ctaGeometry.scale}>
+            <group position={ctaGeometry.center}><Clone object={model} /></group>
+          </group>
+        </CtaPlacement>
+      ) : (
+      <Bounds margin={1.2} maxDuration={0}>
       <ModelPlacement bounds={framingBounds}>
         <IdleRotation enabled={idleRotation}>
           <Center>
@@ -435,13 +488,14 @@ function SwordModel({ idleRotation }: { idleRotation: boolean }) {
           </Center>
         </IdleRotation>
       </ModelPlacement>
-    </Bounds>
+      </Bounds>
+      )}
     </>
   )
 }
 
 /** Standalone sword viewer with optional desktop idle rotation. */
-export default function Sword3D({ className, style, fallback = null, idleRotation = false }: Sword3DProps) {
+export default function Sword3D({ className, style, fallback = null, idleRotation = false, variant = 'hero' }: Sword3DProps) {
   const [contextLost, setContextLost] = useState(false)
 
   return (
@@ -455,7 +509,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
       <SwordRenderBoundary fallback={fallback}>
         {contextLost ? fallback : (
           <Canvas
-            camera={{ position: [0, 0, 6], fov: 40 }}
+            camera={{ position: [0, 0, variant === 'cta' ? 1.2 * 4.2 / (2 * Math.atan(Math.PI * 40 / 360)) : 6], fov: 40 }}
             gl={{ alpha: true, antialias: true }}
             onCreated={({ gl, scene }) => {
               scene.background = null
@@ -483,7 +537,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
               <Lightformer position={[-2, -1, 3]} target={[0, 0, 0]} scale={[0.5, 4]} color="#ff2030" intensity={0.65} />
             </Environment>
             <Suspense fallback={null}>
-              <SwordModel idleRotation={idleRotation} />
+              <SwordModel idleRotation={idleRotation} variant={variant} />
             </Suspense>
           </Canvas>
         )}

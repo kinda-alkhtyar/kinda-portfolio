@@ -35,6 +35,24 @@
   transform: translateX(-50%);
 }
 
+.swordImage.swordModel {
+  /* Match the enlarged model's framing while preserving the existing center. */
+  top: -47.6%;
+  width: 196%;
+  height: 137.2%;
+  overflow: visible;
+}
+
+.swordModel,
+.swordModel div,
+.swordModel canvas {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
 .swordImage {
   top: 0;
   width: auto;

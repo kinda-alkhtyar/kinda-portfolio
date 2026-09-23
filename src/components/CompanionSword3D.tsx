@@ -6,10 +6,16 @@ import { Mesh, MeshStandardMaterial } from 'three'
 import type { Material } from 'three'
 import swordUrl from '../assets/models/Royal_Flameblade_Review.glb?url'
 
+// Add vertical render padding without changing projected pixels per model unit.
+const paddedCanvasHeight = 164
+const paddedCameraFov = 2 * Math.atan(Math.tan(17 * Math.PI / 180) * paddedCanvasHeight / 116) * 180 / Math.PI
+
 function FloatingSword({ motion }: { motion: boolean }) {
   const { scene } = useGLTF(swordUrl)
   const group = useRef<Group>(null)
   const canvas = useThree((state) => state.gl.domElement)
+  const invalidate = useThree((state) => state.invalidate)
+  const drag = useRef({ id: -1, x: 0, y: 0, pitch: 0.04, yaw: 0, holdUntil: 0, returning: false })
   const pointer = useRef({ x: 0, y: 0, proximity: 0 })
   const proximity = useRef(0)
   const hovered = useRef(false)
@@ -54,7 +60,66 @@ function FloatingSword({ motion }: { motion: boolean }) {
   useEffect(() => () => materials.forEach((material) => material.dispose()), [materials])
 
   useEffect(() => {
-    const hero = canvas.closest<HTMLElement>('#home')
+    const previousCursor = canvas.style.cursor
+    const previousTouch = canvas.style.touchAction
+    canvas.style.cursor = 'grab'
+    canvas.style.touchAction = 'none'
+    const down = (event: PointerEvent) => {
+      if (!group.current || drag.current.id !== -1 || (event.pointerType === 'mouse' && event.button !== 0)) return
+      event.preventDefault()
+      event.stopPropagation()
+      Object.assign(drag.current, {
+        id: event.pointerId, x: event.clientX, y: event.clientY,
+        pitch: group.current.rotation.x, yaw: group.current.rotation.y,
+        holdUntil: 0, returning: false,
+      })
+      canvas.setPointerCapture(event.pointerId)
+      canvas.style.cursor = 'grabbing'
+      invalidate()
+    }
+    const move = (event: PointerEvent) => {
+      const state = drag.current
+      if (state.id !== event.pointerId) return
+      event.preventDefault()
+      event.stopPropagation()
+      state.yaw += (event.clientX - state.x) * 0.009
+      state.pitch = Math.max(-0.65, Math.min(0.65, state.pitch + (event.clientY - state.y) * 0.007))
+      state.x = event.clientX
+      state.y = event.clientY
+      invalidate()
+    }
+    const release = () => {
+      const state = drag.current
+      if (state.id === -1) return
+      const id = state.id
+      state.id = -1
+      state.holdUntil = performance.now() + 900
+      state.returning = true
+      canvas.style.cursor = 'grab'
+      if (canvas.hasPointerCapture(id)) canvas.releasePointerCapture(id)
+      invalidate()
+    }
+    canvas.addEventListener('pointerdown', down)
+    canvas.addEventListener('pointermove', move)
+    canvas.addEventListener('pointerup', release)
+    canvas.addEventListener('pointercancel', release)
+    canvas.addEventListener('lostpointercapture', release)
+    window.addEventListener('blur', release)
+    return () => {
+      release()
+      canvas.removeEventListener('pointerdown', down)
+      canvas.removeEventListener('pointermove', move)
+      canvas.removeEventListener('pointerup', release)
+      canvas.removeEventListener('pointercancel', release)
+      canvas.removeEventListener('lostpointercapture', release)
+      window.removeEventListener('blur', release)
+      canvas.style.cursor = previousCursor
+      canvas.style.touchAction = previousTouch
+    }
+  }, [canvas, invalidate])
+
+  useEffect(() => {
+    const hero = document.documentElement
     const reset = () => {
       pointer.current = { x: 0, y: 0, proximity: 0 }
       hovered.current = false
@@ -94,7 +159,17 @@ function FloatingSword({ motion }: { motion: boolean }) {
   }, [canvas, motion, hoverGlow])
 
   useFrame(({ clock }, delta) => {
-    if (!group.current || !motion) return
+    if (!group.current) return
+    const interaction = drag.current
+    if (!motion) {
+      // Direct manipulation remains available; no inertia or automatic reset motion.
+      if (interaction.id !== -1 || interaction.returning) {
+        group.current.rotation.x = interaction.pitch
+        group.current.rotation.y = interaction.yaw
+        interaction.returning = false
+      }
+      return
+    }
     const elapsed = clock.getElapsedTime()
     const smoothing = 1 - Math.exp(-3 * Math.min(delta, 0.05))
     hoverGlow.value += ((hovered.current ? 1 : 0) - hoverGlow.value)
@@ -108,8 +183,25 @@ function FloatingSword({ motion }: { motion: boolean }) {
     const targetYaw = Math.sin(elapsed * 0.36) * 0.16
       + pointer.current.x * pointer.current.proximity * 0.12
       + hoverGlow.value * 0.035
-    group.current.position.x += (targetX - group.current.position.x) * smoothing
-    group.current.position.y += (targetY - group.current.position.y) * smoothing
+    const holding = interaction.id !== -1 || performance.now() < interaction.holdUntil
+    if (!holding) {
+      group.current.position.x += (targetX - group.current.position.x) * smoothing
+      group.current.position.y += (targetY - group.current.position.y) * smoothing
+    }
+    if (holding) {
+      const damping = 1 - Math.exp(-12 * Math.min(delta, 0.05))
+      group.current.rotation.x += (interaction.pitch - group.current.rotation.x) * damping
+      group.current.rotation.y += (interaction.yaw - group.current.rotation.y) * damping
+      return
+    }
+    if (interaction.returning) {
+      // Normalize only after release so return takes the shortest route, never unwinds spins.
+      group.current.rotation.y = targetYaw + Math.atan2(
+        Math.sin(group.current.rotation.y - targetYaw), Math.cos(group.current.rotation.y - targetYaw),
+      )
+      interaction.returning = false
+    }
+    group.current.rotation.x += (0.04 - group.current.rotation.x) * smoothing
     group.current.rotation.y += (targetYaw - group.current.rotation.y) * smoothing
     group.current.rotation.z += (targetTilt - group.current.rotation.z) * smoothing
   })
@@ -130,7 +222,7 @@ export default function CompanionSword3D() {
   const [motion, setMotion] = useState(false)
 
   useEffect(() => {
-    const desktopQuery = window.matchMedia('(min-width: 1025px)')
+    const desktopQuery = window.matchMedia('(min-width: 1200px)')
     const motionQuery = window.matchMedia('(prefers-reduced-motion: no-preference)')
     const update = () => {
       setDesktop(desktopQuery.matches)
@@ -149,7 +241,8 @@ export default function CompanionSword3D() {
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 5.5], fov: 34 }}
+      camera={{ position: [0, 0, 5.5], fov: paddedCameraFov }}
+      style={{ position: 'absolute', top: -24, width: '100%', height: paddedCanvasHeight, overflow: 'visible' }}
       dpr={[1, 1.5]}
       frameloop={motion ? 'always' : 'demand'}
       gl={{ alpha: true, antialias: true }}

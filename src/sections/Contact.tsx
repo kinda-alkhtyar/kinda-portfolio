@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { lazy, Suspense, useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './Contact.module.css'
@@ -7,6 +7,8 @@ import sword from '../assets/sword/ka-sword-with-logo.png'
 import pedestal from '../assets/sword/sword-pedestal.png'
 
 gsap.registerPlugin(ScrollTrigger)
+const Sword3D = lazy(() => import('../components/Sword3D'))
+const swordFallback = <img src={sword} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(0.7)', transformOrigin: 'center' }} />
 
 export default function Contact() {
   const contactRef = useRef<HTMLElement>(null)
@@ -79,7 +81,7 @@ export default function Contact() {
         }, 0.85)
 
       const button = section.querySelector<HTMLButtonElement>('button')
-      const blade = section.querySelector<HTMLImageElement>(`.${styles.swordImage}`)
+      const blade = section.querySelector<HTMLElement>(`.${styles.swordImage}`)
       const point = lightRef.current
       if (!button || !blade || !point) return
 
@@ -133,7 +135,11 @@ export default function Contact() {
             </g>
           </svg>
           <img data-sword-final-pedestal className={styles.pedestalImage} src={pedestal} alt="" width={1774} height={887} loading="lazy" />
-          <img data-sword-final-placeholder className={styles.swordImage} src={sword} alt="" width={1024} height={1536} loading="lazy" />
+          <div className={`${styles.swordImage} ${styles.swordModel}`}>
+            <Suspense fallback={null}>
+              <Sword3D variant="cta" style={{ height: '100%' }} fallback={swordFallback} />
+            </Suspense>
+          </div>
         </div>
         <div className={styles.content}>
           <h2 id="contact-title" className={styles.title}>
