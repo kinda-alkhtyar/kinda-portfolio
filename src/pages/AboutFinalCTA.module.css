@@ -83,3 +83,12 @@
   .scene { inset: 190px 0 0; mask-image: linear-gradient(transparent, #000 18%, #000 88%, transparent); }
   .scene img { top: -5%; right: -8%; width: 120%; }
 }
+
+@media (max-width: 767px) {
+  .section { min-height: 0; aspect-ratio: auto; }
+  .content { width: 90%; margin-left: 5%; padding: 32px 0 260px; }
+  .heading { font-size: clamp(36px, 9vw, 50px); line-height: 1; }
+  .button { min-height: 48px; margin-top: 22px; padding: 12px 20px; font-size: 12px; }
+  .scene { inset: auto 0 0; height: 240px; mask-image: linear-gradient(transparent, #000 18%, #000 88%, transparent); }
+  .scene img { top: -5%; right: -8%; width: 120%; }
+}

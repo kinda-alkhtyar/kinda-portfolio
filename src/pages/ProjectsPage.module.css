@@ -154,3 +154,28 @@
   .footer blockquote { grid-column: 1 / -1; text-align: left; font-size: 14px; }
   .footer p { font-size: 9px; letter-spacing: 1.7px; }
 }
+
+@media (max-width: 767px) {
+  .hero { min-height: 0; }
+  .heroContent { width: 90%; margin-left: 5%; padding: 144px 0 270px; }
+  .heading { width: 100%; max-width: 450px; margin-bottom: 0; }
+  .subtitle { font-size: 17px; line-height: 1.5; }
+  .scene { inset: auto 0 0; height: 290px; border-bottom: 0; mask-image: linear-gradient(transparent, #000 30%); }
+  .scene img { object-position: 50% 57%; }
+  .verticalWords { top: auto; bottom: 28px; right: 5%; font-size: 9px; letter-spacing: 2px; }
+  .filters { flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .filters button { min-width: 0; min-height: 44px; padding: 10px 14px; font-size: 10px; letter-spacing: 1.3px; }
+  .work { padding: 28px 5%; }
+  .sectionHeading { justify-content: flex-start; margin: 0 0 22px; letter-spacing: 2px; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 22px; max-width: 560px; margin-inline: auto; }
+  .cardBottom { min-height: 84px; padding: 14px; }
+  .cardBottom h3 { font-size: 22px; line-height: 1.15; }
+  .cardBottom p { font-size: 13px; line-height: 1.5; }
+  .arrow { display: inline-flex; justify-content: center; align-items: center; min-width: 44px; min-height: 44px; }
+  .pagination { gap: 6px; margin-top: 28px; }
+  .pagination button { min-width: 44px; min-height: 44px; }
+  .pagination button:first-child, .pagination button:last-child { margin-inline: 0; }
+  .footer { grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px 5% 32px; }
+  .footer p { font-size: 9px; letter-spacing: 1.4px; }
+  .footer blockquote { grid-column: 1 / -1; text-align: left; font-size: 14px; line-height: 1.6; }
+}

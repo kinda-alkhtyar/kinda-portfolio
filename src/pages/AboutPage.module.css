@@ -249,3 +249,34 @@
   .purposeScene::after { background: linear-gradient(90deg, #03030233, transparent 55%, #03030299); }
   .purposeLabels { right: 5%; bottom: 32px; font-size: 9px; }
 }
+
+@media (max-width: 767px) {
+  .hero { min-height: 0; aspect-ratio: auto; }
+  .nav { flex-wrap: wrap; justify-content: space-between; gap: 0; height: 112px; padding: 8px 5% 0; }
+  .logo, .logo img { width: 44px; height: 44px; }
+  .availability { font-size: 8px; }
+  .links { order: 3; width: 100%; justify-content: space-between; gap: 12px; }
+  .links a { min-height: 44px; padding-block: 14px; font-size: 10px; }
+  .content { width: 90%; margin: 28px 5% 0; padding-bottom: 340px; }
+  .heading { font-size: clamp(60px, 13vw, 88px); max-width: 100%; line-height: .86; }
+  .flourish { max-width: 100%; }
+  .name { margin-top: 18px; font-size: 21px; }
+  .role, .description { font-size: 15px; line-height: 1.5; }
+  .description { margin: 8px 0 20px; }
+  .actions { flex-wrap: wrap; gap: 10px; }
+  .primaryButton, .secondaryButton { flex: 1 1 140px; min-height: 48px; padding: 12px; font-size: 11px; gap: 8px; }
+  .motto { margin-top: 20px; }
+  .scene { inset: auto -15% 0; height: 350px; mask-image: linear-gradient(transparent, #000 22%); }
+  .scene img { top: -2%; left: 50%; height: 108%; }
+  .labels { top: auto; bottom: 55px; right: 5%; gap: 28px; }
+  .labels li { font-size: 9px; }
+  .labels svg { width: 21px; height: 21px; }
+  .connector, .labels li:first-child .connector { width: 28px; }
+  .purpose { min-height: 0; aspect-ratio: auto; }
+  .purposeContent { width: 90%; margin-left: 5%; padding: 32px 0 250px; }
+  .purposeHeading { font-size: clamp(38px, 9vw, 52px); }
+  .purposeDescription { font-size: 15px; line-height: 1.55; }
+  .purposeScene { inset: auto -10% 0; height: 260px; mask-image: linear-gradient(transparent, #000 35%); }
+  .purposeScene img { object-position: 60% center; }
+  .purposeLabels { right: 5%; bottom: 24px; font-size: 9px; }
+}

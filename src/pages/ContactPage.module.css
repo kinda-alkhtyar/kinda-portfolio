@@ -212,3 +212,17 @@
   .motto { bottom: 3%; left: 5%; font-size: 9px; letter-spacing: 2px; }
   .motto::after { width: 58px; left: calc(100% + 20px); }
 }
+
+@media (max-width: 767px) {
+  .hero { min-height: 0; aspect-ratio: auto; }
+  .content { width: 90%; margin-left: 5%; padding: 146px 0 440px; }
+  .label { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 18px; }
+  .heading { font-size: clamp(38px, 8.6vw, 62px); line-height: .94; }
+  .description { max-width: 100%; margin-top: 20px; font-size: 15px; line-height: 1.6; }
+  .flourish { top: -20px; left: 19%; width: 75%; }
+  .swordScene { top: auto; bottom: 64px; right: 20%; width: 60%; height: 350px; }
+  .ideas { top: auto; bottom: 275px; right: 5%; font-size: 9px; letter-spacing: 1.4px; }
+  .swordCaption { right: 5%; bottom: 110px; font-size: 9px; }
+  .motto { bottom: 24px; left: 5%; font-size: 9px; letter-spacing: 1.5px; }
+  .motto::after { width: 48px; left: calc(100% + 16px); }
+}

@@ -48,3 +48,38 @@
 @media (max-width: 900px) { .studioCopy { margin-top: 78vh; } }
 @media (max-width: 900px) { .finalCopy { margin-top: 78vh; } }
 @media (max-width: 600px) { .finalCopy h2 { font-size: clamp(42px, 11vw, 60px); } }
+@media (max-width: 767px) {
+  .main { min-height: 0; padding: 112px 5% 32px; }
+  .eyebrow { margin-bottom: 14px; font-size: 9px; letter-spacing: 2px; }
+  .copy h1 { font-size: clamp(44px, 9.5vw, 66px); line-height: .96; }
+  .description { margin-top: 18px; font-size: clamp(15px, 3.8vw, 18px); line-height: 1.5; }
+  .instruction { margin-top: 20px; font-size: 9px; line-height: 1.5; letter-spacing: 1.2px; }
+  .instruction span { padding-inline: 6px; }
+  .viewer { top: 72px; height: clamp(300px, 49svh, 470px); min-height: 0; margin-top: 26px; }
+  .viewer::before, .viewer::after { width: 18px; height: 18px; }
+  .dragIndicator { right: 14px; bottom: 14px; font-size: 8px; letter-spacing: 1.7px; }
+  .hotspot { gap: 5px; min-height: 36px; padding: 6px 8px; font-size: 8px; letter-spacing: .8px; }
+  .hotspot > span { width: 6px; height: 6px; }
+  .infoPanel { right: 12px; bottom: 42px; width: min(270px, calc(100% - 24px)); padding: 18px; }
+  .infoPanel h3 { font-size: 25px; }
+  .infoPanel > p:last-child { font-size: 12px; }
+  .sceneLabel { margin-bottom: 12px; font-size: 9px; letter-spacing: 2px; }
+  .scrollCopy { margin-top: 42svh; }
+  .detailCopy, .studioCopy { margin-top: 50svh; }
+  .finalCopy { margin-top: 54svh; padding: 20px 0 24px; }
+  .scrollCopy h2, .detailCopy h2, .studioCopy h2 { font-size: clamp(34px, 8.5vw, 52px); line-height: 1.04; }
+  .finalCopy h2 { font-size: clamp(38px, 9.4vw, 56px); line-height: 1.02; }
+  .scrollCopy > p:last-child, .detailCopy > p:last-child, .studioCopy > p:last-child, .finalCopy > p:nth-of-type(2) { margin-top: 16px; font-size: 15px; line-height: 1.5; }
+  .finalAction { min-height: 48px; margin-top: 26px; padding: 12px 16px; gap: 24px; font-size: 9px; letter-spacing: 1.5px; }
+  .footer { margin-top: 32svh; gap: 12px; font-size: 8px; letter-spacing: .7px; }
+}
+
+@media (max-width: 767px) {
+  .main { padding-top: 144px; }
+  .viewer { top: 124px; height: clamp(260px, 43svh, 420px); max-height: calc(100svh - 160px); }
+  .copy h1 { font-size: clamp(38px, 9vw, 62px); }
+  .instruction { letter-spacing: .8px; }
+  .closePanel { top: 4px; right: 4px; min-width: 44px; min-height: 44px; }
+  .infoPanel h3 { padding-right: 24px; }
+  .finalAction { min-height: 48px; font-size: 10px; }
+}

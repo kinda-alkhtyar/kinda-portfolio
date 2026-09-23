@@ -293,3 +293,18 @@
     grid-row: auto;
   }
 }
+
+@media (max-width: 767px) {
+  .container { padding: 48px 5% 56px; }
+  .heading { margin-bottom: 32px; }
+  .title { font-size: clamp(42px, 10vw, 64px); line-height: .95; }
+  .subtitle { line-height: 1.6; }
+  .list { gap: 56px; }
+  .project, .project:nth-child(even) { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .project:nth-child(even) .details, .taaniqiMockup { grid-column: auto; grid-row: auto; }
+  .projectTitle { font-size: clamp(26px, 6.4vw, 38px); line-height: 1.13; }
+  .description { max-width: 100%; margin-block: 16px; font-size: 14px; line-height: 1.6; }
+  .tags { gap: 7px; margin-bottom: 20px; }
+  .button { min-height: 48px; padding: 12px 18px; gap: 20px; }
+  .aqaratiMockup, .taaniqiMockup, .yumnaMockup { max-width: 540px; margin-inline: auto; }
+}

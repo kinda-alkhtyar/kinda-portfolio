@@ -90,3 +90,14 @@
   .icon svg { width: 25px; height: 25px; }
   .value { font-size: 13px; }
 }
+
+@media (max-width: 767px) {
+  .section { padding: 28px 5%; }
+  .cards { max-width: 560px; margin-inline: auto; gap: 12px; }
+  .card { grid-template-columns: 36px minmax(0, 1fr) 18px; min-height: 78px; gap: 12px; padding: 14px; }
+  .icon { min-height: 42px; }
+  .icon svg { width: 26px; height: 26px; }
+  .label { font-size: 10px; letter-spacing: 1.8px; }
+  .value { font-size: 14px; }
+  .arrow { width: 18px; height: 18px; }
+}

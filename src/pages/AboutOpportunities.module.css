@@ -64,3 +64,15 @@
   .detail dt { font-size: 13px; }
   .detail dd { font-size: 12px; }
 }
+
+@media (max-width: 767px) {
+  .section { padding: 32px 5%; }
+  .heading { font-size: 10px; letter-spacing: 1.5px; gap: 8px; }
+  .details { grid-template-columns: 1fr; gap: 0; margin-top: 22px; }
+  .detail { padding: 18px 0; gap: 16px; }
+  .detail:first-child { padding-top: 0; }
+  .detail:last-child { padding-bottom: 0; }
+  .detail + .detail { border-left: 0; border-top: 1px solid #c9bda966; }
+  .detail dt { font-size: 13px; }
+  .detail dd { font-size: 14px; line-height: 1.6; }
+}
