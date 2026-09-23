@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import sword from '../assets/projects-page/hero-sword-red-energy..png'
 import comingSoon from '../assets/projects-page/project-coming-soon-download..png'
@@ -7,21 +7,34 @@ import logo from '../assets/projects/ka-logo.png'
 import aqarati from '../assets/projects-page/aqarati-laptop-mockup.png'
 import taaniqi from '../assets/projects-page/taaniqi-laptop-mockup.png'
 import yumna from '../assets/projects-page/yumna-portfolio-laptop-mockup.png'
+import fruitMilk from '../assets/projects-page/fruit-milk-card.png'
 import styles from './ProjectsPage.module.css'
+import { projectDetails } from './projectDetails'
+import { finishProjectTransition, openProject } from './projectTransition'
 
 const projects = [
   { number: '01', title: 'Aqarati Syria', subtitle: 'Real estate platform', image: aqarati },
   { number: '02', title: 'Taaniqi with Iman', subtitle: 'Fashion & e-commerce', image: taaniqi },
   { number: '03', title: 'Yumna Al-Muallem Portfolio', subtitle: 'Design portfolio', image: yumna },
-  { number: '04', title: 'FruitMilk', subtitle: '', image: null },
+  { number: '04', title: 'FruitMilk', subtitle: '', image: fruitMilk },
   { number: '05', title: 'Coming Soon', subtitle: 'A new project is on its way.', image: comingSoon },
   { number: '06', title: 'Coming Soon', subtitle: 'A new project is on its way.', image: comingSoon },
 ]
 
 export default function ProjectsPage() {
+  const pageRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
   const paginationRef = useRef<HTMLElement>(null)
   const footerRef = useRef<HTMLElement>(null)
+
+  useLayoutEffect(() => {
+    const page = pageRef.current
+    if (!page) return
+    const slug = sessionStorage.getItem('project-transition-return')
+    if (!slug) return
+    sessionStorage.removeItem('project-transition-return')
+    finishProjectTransition(page, page.querySelector<HTMLElement>(`[data-project-slug="${slug}"] .${styles.preview}`), '/projects')
+  }, [])
 
   useEffect(() => {
     const pagination = paginationRef.current
@@ -113,7 +126,7 @@ export default function ProjectsPage() {
   }, [])
 
   return (
-    <div className={styles.page}>
+    <div ref={pageRef} className={styles.page}>
       <Navbar currentPage="projects" />
       <main>
         <section className={styles.hero} aria-labelledby="projects-heading">
@@ -137,16 +150,21 @@ export default function ProjectsPage() {
           <h2 id="selected-work-heading" className={styles.sectionHeading}>Selected work</h2>
           <div ref={cardsRef} className={styles.grid}>
             {projects.map((project) => (
-              <article className={styles.card} key={project.number} aria-labelledby={`work-${project.number}`}>
+              <article className={styles.card} key={project.number} data-project-slug={projectDetails[Number(project.number) - 1]?.slug} aria-labelledby={`work-${project.number}`}>
                 <div className={styles.cardTop}><span>{project.number}</span><span>Website</span></div>
-                <div className={`${styles.preview}${Number(project.number) > 4 ? ` ${styles.comingSoon}` : ''}`}>
-                  {project.image
-                    ? <img src={project.image} alt={Number(project.number) > 4 ? '' : `${project.title} website preview`} loading="lazy" decoding="async" />
-                    : <p className={styles.missingPreview}>FruitMilk<span>Preview unavailable</span></p>}
+                <div className={`${styles.preview}${Number(project.number) > 4 ? ` ${styles.comingSoon}` : ''}`}
+                  role={Number(project.number) <= 4 ? 'link' : undefined}
+                  tabIndex={Number(project.number) <= 4 ? 0 : undefined}
+                  aria-label={Number(project.number) <= 4 ? `View ${project.title} project details` : undefined}
+                  onClick={Number(project.number) <= 4 ? (event) => openProject(event, event.currentTarget, `/projects/${projectDetails[Number(project.number) - 1].slug}`) : undefined}
+                  onKeyDown={Number(project.number) <= 4 ? (event) => { if (event.key === 'Enter') openProject(event, event.currentTarget, `/projects/${projectDetails[Number(project.number) - 1].slug}`) } : undefined}>
+                  <img src={project.image} alt={Number(project.number) > 4 ? '' : `${project.title} website preview`} loading="lazy" decoding="async" />
                 </div>
                 <div className={styles.cardBottom}>
                   <div><h3 id={`work-${project.number}`}>{project.title}</h3><p>{project.subtitle}</p></div>
-                  <span className={styles.arrow} aria-hidden="true">↗</span>
+                  {projectDetails[Number(project.number) - 1] ? (
+                    <a className={styles.arrow} href={`/projects/${projectDetails[Number(project.number) - 1].slug}`} onClick={(event) => openProject(event, event.currentTarget.closest('article')?.querySelector(`.${styles.preview}`) ?? null, event.currentTarget.pathname)} aria-label={`View ${project.title} project details`}>↗</a>
+                  ) : <span className={styles.arrow} aria-hidden="true">↗</span>}
                 </div>
               </article>
             ))}

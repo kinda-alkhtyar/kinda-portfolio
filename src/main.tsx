@@ -3,11 +3,15 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { lazy, Suspense } from 'react'
 import GlobalCompanion from './components/GlobalCompanion'
+import { projectDetails } from './pages/projectDetails'
 
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'))
-const supportedPages = new Set(['/', '/about', '/contact', '/projects'])
+const ProjectDetailPage = lazy(() => import('./pages/ProjectDetailPage'))
+const ThreeDPage = lazy(() => import('./pages/ThreeDPage'))
+const detailPaths = new Set(projectDetails.map((project) => `/projects/${project.slug}`))
+const supportedPages = new Set(['/', '/about', '/contact', '/projects', '/3d', ...detailPaths])
 const pagePath = () => window.location.pathname.replace(/\/$/, '') || '/'
 
 function Site() {
@@ -46,7 +50,7 @@ function Site() {
   }, [page])
   return <>
     <Suspense fallback={null}>
-      {page === '/about' ? <AboutPage /> : page === '/contact' ? <ContactPage /> : page === '/projects' ? <ProjectsPage /> : <App />}
+      {detailPaths.has(page) ? <ProjectDetailPage slug={page.split('/')[2]} /> : page === '/about' ? <AboutPage /> : page === '/contact' ? <ContactPage /> : page === '/projects' ? <ProjectsPage /> : page === '/3d' ? <ThreeDPage /> : <App />}
     </Suspense>
     <GlobalCompanion page={page} />
   </>

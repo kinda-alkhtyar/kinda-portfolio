@@ -53,11 +53,11 @@ export default function AboutPage() {
           <p className={styles.role}>Full-Stack Developer</p>
           <p className={styles.description}>Building modern web experiences<br />from idea to launch.</p>
           <div className={styles.actions}>
-            <button className={styles.primaryButton} type="button" disabled title="CV download coming soon">
+            <a className={styles.primaryButton} href="/Kinda_Alkhityar_CV_Same_Design_Updated.pdf" target="_blank" rel="noopener noreferrer">
               Download CV
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M5 13v4h10v-4" /></svg>
-            </button>
-            <a className={styles.secondaryButton} href="/#contact">Let’s connect <span aria-hidden="true">→</span></a>
+            </a>
+            <a className={styles.secondaryButton} href="/contact">Let’s connect <span aria-hidden="true">→</span></a>
           </div>
           <p className={styles.motto}>Turning<br />ideas into<br />reality</p>
         </div>

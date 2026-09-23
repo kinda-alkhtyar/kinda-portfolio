@@ -3,12 +3,13 @@ import logo from '../assets/projects/ka-logo.png'
 
 const links = [
   { label: 'Home', href: '#home' },
-  { label: 'About', href: '/about' },
   { label: 'Projects', href: '/projects' },
+  { label: '3D', href: '/3d' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ]
 
-export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' | 'projects' }) {
+export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' | 'projects' | '3d' }) {
   const pageLinks = currentPage !== 'home'
     ? links.map((link) => ({ ...link, href: link.label === 'Contact' ? '/contact' : link.href.startsWith('#') ? `/${link.href}` : link.href }))
     : links

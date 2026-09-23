@@ -116,6 +116,8 @@
 .cardBottom h3 { color: #e5e3dd; font-size: clamp(18px, 1.85vw, 26px); font-variant: small-caps; line-height: 1; }
 .cardBottom p { margin-top: 5px; color: #cececa; font-size: clamp(12px, 1.3vw, 17px); }
 .arrow { color: #e9e8e2; font-size: 31px; }
+.arrow:link, .arrow:visited { color: #e9e8e2; text-decoration: none; }
+.arrow:focus-visible { outline: 2px solid #edbe7b; outline-offset: 4px; }
 .pagination { margin-top: 38px; }
 .pagination button[aria-current] { border-color: #ff3023; box-shadow: 0 0 15px #d9151744; }
 .pagination button:first-child, .pagination button:last-child { border-color: #b89965; }

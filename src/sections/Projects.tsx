@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -11,6 +11,8 @@ import yumnaLaptop from '../assets/projects-page/yumna-portfolio-laptop-mockup.p
 import yumnaMobile from '../assets/projects-page/yumna-portfolio-mobile-mockup.png'
 
 gsap.registerPlugin(ScrollTrigger)
+
+const projectPreviews = [aqaratiLaptop, aqaratiMobile, taaniqiLaptop, taaniqiMobile, yumnaLaptop, yumnaMobile]
 
 const projects = [
   {
@@ -48,18 +50,18 @@ function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass
         defaults: {
           autoAlpha: 0,
           y: 20,
-          duration: 0.95,
+          duration: 0.8,
           ease: 'power2.out',
           clearProps: 'opacity,visibility,transform',
         },
         scrollTrigger: {
           trigger: project,
-          start: 'top 75%',
+          start: 'top 102%',
           once: true,
         },
       })
         .from(`.${mockupClass}`, {}, 0)
-        .from(`.${styles.details} > *`, { stagger: 0.075 }, 0.14)
+        .from(`.${styles.details} > *`, { stagger: 0.06 }, 0.08)
     })
 
     return () => media.revert()
@@ -68,6 +70,10 @@ function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass
 }
 
 export default function Projects() {
+  useEffect(() => {
+    projectPreviews.forEach((src) => { const image = new Image(); image.src = src })
+  }, [])
+
   const firstProjectRef = useRef<HTMLElement>(null)
   const secondProjectRef = useRef<HTMLElement>(null)
   const thirdProjectRef = useRef<HTMLElement>(null)
