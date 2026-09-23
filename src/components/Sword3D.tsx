@@ -310,33 +310,21 @@ function ModelPlacement({ bounds, children }: { bounds: Box3; children: ReactNod
 return <group ref={group} scale={1.32177528}>{children}</group>
 }
 
-function CtaPlacement({ children }: { children: ReactNode }) {
+function CtaPlacement({ children, running }: { children: ReactNode; running: boolean }) {
   const group = useRef<Group>(null)
   const origin = useMemo(() => new Vector3(), [])
-  const { setFrameloop, invalidate } = useThree()
+  const invalidate = useThree((state) => state.invalidate)
   const rotating = useRef(false)
   const rotationTime = useRef({ elapsed: 0, started: 0 })
   useEffect(() => {
-    const motion = matchMedia('(prefers-reduced-motion: no-preference)')
-    const update = () => {
-      const now = performance.now()
-      if (rotating.current) rotationTime.current.elapsed += (now - rotationTime.current.started) / 1000
-      rotationTime.current.started = now
-      rotating.current = motion.matches && !document.hidden
-      setFrameloop(rotating.current ? 'always' : 'demand')
-      invalidate()
-    }
-    motion.addEventListener('change', update)
-    document.addEventListener('visibilitychange', update)
-    update()
+    rotationTime.current.started = performance.now()
+    rotating.current = running
+    invalidate()
     return () => {
       if (rotating.current) rotationTime.current.elapsed += (performance.now() - rotationTime.current.started) / 1000
       rotating.current = false
-      motion.removeEventListener('change', update)
-      document.removeEventListener('visibilitychange', update)
-      setFrameloop('demand')
     }
-  }, [setFrameloop, invalidate])
+  }, [running, invalidate])
   useFrame(({ camera, viewport, size }) => {
     if (group.current && size.height > 0) {
       group.current.position.y = 10 * viewport.getCurrentViewport(camera, origin).height / size.height
@@ -349,7 +337,7 @@ function CtaPlacement({ children }: { children: ReactNode }) {
     return <group ref={group} scale={1.4}>{children}</group>
 }
 
-function SwordModel({ idleRotation, variant }: { idleRotation: boolean; variant: 'hero' | 'cta' }) {
+function SwordModel({ idleRotation, variant, ctaRunning }: { idleRotation: boolean; variant: 'hero' | 'cta'; ctaRunning: boolean }) {
   const { scene } = useGLTF(swordUrl)
   const goldReflectionScene = useMemo(() => new Scene(), [])
   const heroLight = useMemo(() => ({
@@ -472,7 +460,7 @@ function SwordModel({ idleRotation, variant }: { idleRotation: boolean; variant:
       <Lightformer position={[4, 3, -2]} target={[0, 0, 0]} scale={[2, 4]} color="#ffd59b" intensity={1.6} />
     </Environment>
       {variant === 'cta' ? (
-        <CtaPlacement>
+        <CtaPlacement running={ctaRunning}>
           <group scale={ctaGeometry.scale}>
             <group position={ctaGeometry.center}><Clone object={model} /></group>
           </group>
@@ -497,9 +485,34 @@ function SwordModel({ idleRotation, variant }: { idleRotation: boolean; variant:
 /** Standalone sword viewer with optional desktop idle rotation. */
 export default function Sword3D({ className, style, fallback = null, idleRotation = false, variant = 'hero' }: Sword3DProps) {
   const [contextLost, setContextLost] = useState(false)
+  const surfaceRef = useRef<HTMLDivElement>(null)
+  const [ctaRunning, setCtaRunning] = useState(false)
+
+  useEffect(() => {
+    if (variant !== 'cta' || !surfaceRef.current) return
+    const surface = surfaceRef.current
+    const motion = matchMedia('(prefers-reduced-motion: no-preference)')
+    const rect = surface.getBoundingClientRect()
+    let nearby = rect.bottom > -200 && rect.top < innerHeight + 200
+    const update = () => setCtaRunning(nearby && motion.matches && !document.hidden)
+    const observer = new IntersectionObserver(([entry]) => {
+      nearby = entry.isIntersecting
+      update()
+    }, { rootMargin: '200px', threshold: 0 })
+    observer.observe(surface)
+    motion.addEventListener('change', update)
+    document.addEventListener('visibilitychange', update)
+    update()
+    return () => {
+      observer.disconnect()
+      motion.removeEventListener('change', update)
+      document.removeEventListener('visibilitychange', update)
+    }
+  }, [variant])
 
   return (
     <div
+      ref={surfaceRef}
       className={className}
       data-sword-render-surface
       style={{ width: '100%', height: 480, ...style, ...transparentSurface }}
@@ -521,7 +534,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
             }}
             fallback={fallback}
             dpr={[1, 2]}
-            frameloop="demand"
+            frameloop={variant === 'cta' && ctaRunning ? 'always' : 'demand'}
             style={transparentSurface}
           >
             <ambientLight intensity={0.12} />
@@ -537,7 +550,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
               <Lightformer position={[-2, -1, 3]} target={[0, 0, 0]} scale={[0.5, 4]} color="#ff2030" intensity={0.65} />
             </Environment>
             <Suspense fallback={null}>
-              <SwordModel idleRotation={idleRotation} variant={variant} />
+              <SwordModel idleRotation={idleRotation} variant={variant} ctaRunning={ctaRunning} />
             </Suspense>
           </Canvas>
         )}

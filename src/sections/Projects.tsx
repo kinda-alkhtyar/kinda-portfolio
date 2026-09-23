@@ -3,8 +3,6 @@ import type { RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import styles from './Projects.module.css'
-import { heroSwordRuntime } from '../components/heroSwordRuntime'
-import type { SwordProjectId } from '../components/heroSwordRuntime'
 import aqaratiLaptop from '../assets/projects-page/aqarati-laptop-mockup.png'
 import aqaratiMobile from '../assets/projects-page/aqarati-mobile-mockup.png'
 import taaniqiLaptop from '../assets/projects-page/taaniqi-laptop-mockup.png'
@@ -35,7 +33,7 @@ const projects = [
   },
 ]
 
-function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass: string, id: SwordProjectId) {
+function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass: string) {
   useLayoutEffect(() => {
     const project = projectRef.current
     if (!project) return
@@ -44,12 +42,9 @@ function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass
 
     media.add({
       motion: '(prefers-reduced-motion: no-preference)',
-      desktop: '(min-width: 681px) and (any-hover: hover) and (any-pointer: fine)',
     }, (context) => {
       if (!context.conditions?.motion) return
-      const desktop = Boolean(context.conditions.desktop)
-      const reveal = gsap.timeline({
-        paused: desktop,
+      gsap.timeline({
         defaults: {
           autoAlpha: 0,
           y: 20,
@@ -57,31 +52,18 @@ function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass
           ease: 'power2.out',
           clearProps: 'opacity,visibility,transform',
         },
-        scrollTrigger: desktop ? undefined : {
+        scrollTrigger: {
           trigger: project,
-          start: 'top 85%',
+          start: 'top 75%',
           once: true,
         },
       })
         .from(`.${mockupClass}`, {}, 0)
         .from(`.${styles.details} > *`, { stagger: 0.075 }, 0.14)
-      if (desktop) {
-        const unsubscribe = heroSwordRuntime.onProjectActivated(id, () => reveal.play())
-        // A failed or unavailable WebGL viewer must never hide project content.
-        const fallback = ScrollTrigger.create({
-          trigger: project,
-          start: 'top 85%',
-          once: true,
-          onEnter: () => {
-            if (!heroSwordRuntime.state.idle.enabled) reveal.play()
-          },
-        })
-        return () => { unsubscribe(); fallback.kill() }
-      }
     })
 
     return () => media.revert()
-  }, [projectRef, mockupClass, id])
+  }, [projectRef, mockupClass])
 
 }
 
@@ -90,9 +72,9 @@ export default function Projects() {
   const secondProjectRef = useRef<HTMLElement>(null)
   const thirdProjectRef = useRef<HTMLElement>(null)
 
-  useProjectReveal(firstProjectRef, styles.aqaratiMockup, '01')
-  useProjectReveal(secondProjectRef, styles.taaniqiMockup, '02')
-  useProjectReveal(thirdProjectRef, styles.yumnaMockup, '03')
+  useProjectReveal(firstProjectRef, styles.aqaratiMockup)
+  useProjectReveal(secondProjectRef, styles.taaniqiMockup)
+  useProjectReveal(thirdProjectRef, styles.yumnaMockup)
 
   return (
     <section id="projects" className={styles.projects} aria-labelledby="projects-title">
