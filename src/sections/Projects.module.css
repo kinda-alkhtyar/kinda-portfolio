@@ -29,6 +29,7 @@
 
 .title {
   margin: 0;
+  color: #edbe7b;
   font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   font-size: clamp(52px, 6.8vw, 94px);
   font-weight: 500;
@@ -88,6 +89,7 @@
 
 .projectTitle {
   margin: 0;
+  color: #edbe7b;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(28px, 3vw, 44px);
   font-weight: 400;

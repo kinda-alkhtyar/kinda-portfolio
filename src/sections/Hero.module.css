@@ -63,6 +63,7 @@
 
 .title {
   position: relative;
+  color: #edbe7b;
   height: clamp(180px, 19vw, 260px);
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
@@ -83,6 +84,7 @@
   height: auto;
   object-fit: contain;
   object-position: left center;
+  filter: url('#home-heading-gold');
   transform: translateY(-50%);
 }
 

@@ -9,6 +9,7 @@
 }
 
 .label {
+  color: #edbe7b;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -89,6 +90,7 @@
 .monogram > span { font-style: italic; }
 
 .item h3 {
+  color: #edbe7b;
   margin: 9px 0 4px;
   font-size: clamp(15px, 1.5vw, 22px);
   font-weight: 400;

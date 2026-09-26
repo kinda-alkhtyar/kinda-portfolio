@@ -46,10 +46,10 @@
   font-variant: small-caps;
   line-height: .95;
   letter-spacing: -.035em;
-  color: #f5e7d4;
-  background: linear-gradient(#fffdf7 9%, #f6eadb 38%, #cf956c 53%, #fff9ee 66%, #dfae89 100%);
+  color: #edbe7b;
+  background: linear-gradient(#edbe7b, #edbe7b);
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: #edbe7b;
 }
 
 .accent {
@@ -113,3 +113,5 @@
   .groupHeading h3 { font-size: 14px; }
   .group p { font-size: 14px; line-height: 1.6; }
 }
+
+.groupHeading h3 { color: #edbe7b; }

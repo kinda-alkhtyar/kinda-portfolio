@@ -280,3 +280,5 @@
   .purposeScene img { object-position: 60% center; }
   .purposeLabels { right: 5%; bottom: 24px; font-size: 9px; }
 }
+
+.heading { color: #edbe7b; background-image: linear-gradient(#edbe7b, #edbe7b); -webkit-text-fill-color: #edbe7b; }

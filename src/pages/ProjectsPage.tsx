@@ -135,7 +135,14 @@ export default function ProjectsPage() {
           </div>
           <div className={styles.heroContent}>
             <p className={styles.eyebrow}><span>03</span><span aria-hidden="true">—</span>Projects</p>
-            <h1 id="projects-heading" className={styles.heading}><img src={heading} alt="Projects" width={2172} height={724} /></h1>
+            <h1 id="projects-heading" className={styles.heading}>
+              <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
+                <defs><filter id="projects-heading-gold" colorInterpolationFilters="sRGB">
+                  <feFlood floodColor="#edbe7b" /><feComposite in2="SourceAlpha" operator="in" />
+                </filter></defs>
+              </svg>
+              <img src={heading} alt="Projects" width={2172} height={724} />
+            </h1>
             <p className={styles.subtitle}>Digital products. Real impact.</p>
             <div className={styles.filters} role="group" aria-label="Project filters (preview only)">
               <button type="button" className={styles.selected} aria-pressed="true" aria-disabled="true">All</button>

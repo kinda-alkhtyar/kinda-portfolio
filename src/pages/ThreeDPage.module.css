@@ -88,3 +88,5 @@
   .viewer { top: 116px; height: 48svh; max-height: calc(100svh - 136px); }
   .infoPanel { padding: 14px; bottom: 38px; }
 }
+
+.copy h1, .copy h1 span, .scrollCopy h2, .detailCopy h2, .studioCopy h2, .finalCopy h2, .infoPanel h3 { color: #edbe7b; }

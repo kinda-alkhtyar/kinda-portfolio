@@ -113,6 +113,14 @@ export default function Hero() {
       <div className={styles.container}>
         <div className={styles.content}>
           <h1 id="hero-title" className={styles.title}>
+            <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
+              <defs>
+                <filter id="home-heading-gold" colorInterpolationFilters="sRGB">
+                  <feFlood floodColor="#edbe7b" />
+                  <feComposite in2="SourceAlpha" operator="in" />
+                </filter>
+              </defs>
+            </svg>
             <img
               className={styles.wordmark}
               src={wordmark}

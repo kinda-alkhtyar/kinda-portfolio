@@ -104,6 +104,7 @@
 }
 
 .title {
+  color: #edbe7b;
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(32px, 4.5vw, 56px);

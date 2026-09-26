@@ -157,9 +157,9 @@
   line-height: .83;
   letter-spacing: -.04em;
   color: #edbe7b;
-  background: linear-gradient(#fbe6c5 8%, #edcca3 38%, #ba8050 53%, #f5dab5 66%, #d4a06d 100%);
+  background: linear-gradient(#edbe7b, #edbe7b);
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: #edbe7b;
 }
 
 .description { max-width: 85%; margin: 20px 0 0; font-size: clamp(16px, 1.6vw, 25px); line-height: 1.5; letter-spacing: .3px; }
