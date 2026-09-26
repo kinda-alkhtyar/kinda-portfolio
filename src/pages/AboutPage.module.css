@@ -250,7 +250,7 @@
   .purposeLabels { right: 5%; bottom: 32px; font-size: 9px; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .hero { min-height: 0; aspect-ratio: auto; }
   .nav { flex-wrap: wrap; justify-content: space-between; gap: 0; height: 112px; padding: 8px 5% 0; }
   .logo, .logo img { width: 44px; height: 44px; }

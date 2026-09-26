@@ -16,6 +16,55 @@ export default function Hero() {
   const heroRef = useRef<HTMLElement>(null)
 
   useLayoutEffect(() => {
+    const hero = heroRef.current
+    const visual = hero?.querySelector<HTMLElement>(`.${styles.swordVisual}`)
+    const container = hero?.querySelector<HTMLElement>(`.${styles.container}`)
+    if (!hero || !visual || !container) return
+
+    // Measured ring center in the unmodified 1672 × 941 background asset.
+    const image = { width: 1672, height: 941, x: 1190, y: 435 }
+    const align = () => {
+      const width = hero.clientWidth
+      const height = hero.clientHeight
+      const mobile = window.matchMedia('(max-width: 768px)').matches
+      const position = getComputedStyle(visual)
+      const previousX = parseFloat(position.left) || 0
+      const previousY = parseFloat(position.top) || 0
+      // Offset coordinates ignore the entrance transform and idle float.
+      const neutralX = container.offsetLeft + visual.offsetLeft - previousX + visual.clientWidth / 2
+      // ModelPlacement offsets the model 22px below the canvas center;
+      // the existing canvas is positioned 24px above the effects anchor.
+      const neutralY = container.offsetTop + visual.offsetTop - previousY + visual.clientHeight * (mobile ? 0.5 : 0.44) - 2
+      let scale = Math.max(width / image.width, height / image.height)
+      let x = (width - image.width * scale) / 2
+      let y = (height - image.height * scale) / 2
+      if (mobile) {
+        // Cover the sword row on phones rather than magnifying the ring across
+        // the entire tall, stacked Hero. Keep the original image undistorted.
+        const imageTop = container.offsetTop + visual.offsetTop - previousY - 20
+        const imageHeight = visual.clientHeight + 40
+        const ringY = neutralY - imageTop
+        scale = Math.max(width / image.width, imageHeight / image.height)
+        scale = Math.max(scale, neutralX / image.x, (width - neutralX) / (image.width - image.x),
+          ringY / image.y, (imageHeight - ringY) / (image.height - image.y))
+        x = neutralX - image.x * scale
+        y = ringY - image.y * scale
+        hero.style.setProperty('--hero-image-top', `${imageTop}px`)
+        hero.style.setProperty('--hero-image-height', `${imageHeight}px`)
+      }
+      hero.style.setProperty('--hero-image-size', `${image.width * scale}px ${image.height * scale}px`)
+      hero.style.setProperty('--hero-image-position', `${x}px ${y}px`)
+      visual.style.setProperty('--ring-offset-x', mobile ? '0px' : `${image.x * scale + x - neutralX}px`)
+      visual.style.setProperty('--ring-offset-y', mobile ? '0px' : `${image.y * scale + y - neutralY}px`)
+    }
+    align()
+    const observer = new ResizeObserver(align)
+    observer.observe(hero)
+    observer.observe(visual)
+    return () => observer.disconnect()
+  }, [])
+
+  useLayoutEffect(() => {
     const media = gsap.matchMedia(heroRef)
 
     media.add({

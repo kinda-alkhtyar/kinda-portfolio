@@ -91,7 +91,7 @@
   .value { font-size: 13px; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .section { padding: 28px 5%; }
   .cards { max-width: 560px; margin-inline: auto; gap: 12px; }
   .card { grid-template-columns: 36px minmax(0, 1fr) 18px; min-height: 78px; gap: 12px; padding: 14px; }

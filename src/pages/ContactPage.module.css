@@ -213,7 +213,7 @@
   .motto::after { width: 58px; left: calc(100% + 20px); }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .hero { min-height: 0; aspect-ratio: auto; }
   .content { width: 90%; margin-left: 5%; padding: 146px 0 440px; }
   .label { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 18px; }

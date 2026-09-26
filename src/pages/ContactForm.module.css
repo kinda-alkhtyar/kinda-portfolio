@@ -124,7 +124,7 @@
   .header h2 { font-size: 10px; letter-spacing: 2px; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .section { padding: 28px 5% 32px; }
   .form { width: 100%; max-width: 560px; margin-inline: auto; padding: 22px 18px 18px; }
   .header { flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }

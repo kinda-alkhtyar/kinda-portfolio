@@ -294,7 +294,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .container { padding: 48px 5% 56px; }
   .heading { margin-bottom: 32px; }
   .title { font-size: clamp(42px, 10vw, 64px); line-height: .95; }

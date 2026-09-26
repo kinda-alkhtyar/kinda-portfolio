@@ -155,7 +155,7 @@
   .footer p { font-size: 9px; letter-spacing: 1.7px; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .hero { min-height: 0; }
   .heroContent { width: 90%; margin-left: 5%; padding: 144px 0 270px; }
   .heading { width: 100%; max-width: 450px; margin-bottom: 0; }

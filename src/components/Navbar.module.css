@@ -134,7 +134,8 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
+  :global(body) { background: #030302; }
   .header { margin-bottom: -113px; }
   .nav { flex-wrap: wrap; min-height: 112px; padding: 8px 5%; gap: 4px 16px; }
   .links { order: 3; width: 100%; justify-content: space-between; gap: 8px; }

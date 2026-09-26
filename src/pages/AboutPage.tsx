@@ -32,9 +32,10 @@ export default function AboutPage() {
             </a>
             <ul className={styles.links}>
               <li><a href="/">Home</a></li>
-              <li><a href="/about" aria-current="page">About</a></li>
               <li><a href="/#projects">Projects</a></li>
+              <li><a href="/about" aria-current="page">About</a></li>
               <li><a href="/#contact">Contact</a></li>
+              <li><a href="/3d">3D</a></li>
             </ul>
             <span className={styles.availability}><span aria-hidden="true" />Available for opportunities</span>
           </nav>

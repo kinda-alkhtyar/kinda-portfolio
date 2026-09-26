@@ -170,7 +170,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .container { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 76px 5% 56px; text-align: center; }
   .sword { width: min(100%, 140px); }
   .title { font-size: clamp(30px, 8vw, 46px); line-height: 1.08; }

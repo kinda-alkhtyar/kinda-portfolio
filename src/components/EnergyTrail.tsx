@@ -166,14 +166,20 @@ export default function EnergyTrail() {
         const segmentEndX = ctaPosition.x + ctaSword.offsetWidth / 2
         const segmentEndY = ctaPosition.y + ctaSword.offsetHeight * 0.7
         const segmentHeight = segmentEndY - segmentStartY
+        const bottomY = stage.clientHeight - segmentStartY
+        const remainingHeight = Math.max(0, bottomY - segmentHeight)
+        const bottomX = Math.max(width * 0.08, Math.min(width * 0.92, segmentEndX + width * 0.08))
         const segmentPath = `M ${segmentStartX} 0
           C ${segmentStartX + (segmentStartX - width * 0.65) * 0.5} ${previousHeight * 0.06},
             ${segmentEndX} ${segmentHeight * 0.55},
-            ${segmentEndX} ${segmentHeight}`
+            ${segmentEndX} ${segmentHeight}
+          C ${segmentEndX} ${segmentHeight + remainingHeight * 0.35},
+            ${bottomX} ${segmentHeight + remainingHeight * 0.7},
+            ${bottomX} ${bottomY + 12}`
 
-        finalSegment.setAttribute('viewBox', `0 -6 ${width} ${segmentHeight + 18}`)
+        finalSegment.setAttribute('viewBox', `0 -6 ${width} ${bottomY + 18}`)
         finalSegment.style.top = `${segmentStartY - 6}px`
-        finalSegment.style.height = `${segmentHeight + 18}px`
+        finalSegment.style.height = `${bottomY + 18}px`
         finalSegment.querySelectorAll('path').forEach((line) => line.setAttribute('d', segmentPath))
         finalSegment.style.visibility = 'visible'
       }
@@ -373,7 +379,7 @@ export default function EnergyTrail() {
           .fromTo(finalSegment.querySelectorAll('path'), { strokeDashoffset: 1000 },
             { strokeDashoffset: 0, duration: finalCompileStart }, 0)
           .to(finalSegment.querySelectorAll('path'),
-            { strokeDashoffset: -1000, duration: 1 - finalCompileStart, ease: 'sine.inOut' }, finalCompileStart)
+            { strokeDashoffset: 0, duration: 1 - finalCompileStart, ease: 'sine.inOut' }, finalCompileStart)
           .fromTo(finalSegment.querySelectorAll('text'), { opacity: 0 },
             { opacity: 0.2, duration: 0.3 }, 0.15)
           .to(finalSegment.querySelectorAll('textPath'),

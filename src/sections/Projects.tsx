@@ -113,8 +113,11 @@ export default function Projects() {
                 <button
                   className={styles.button}
                   type="button"
-                  disabled
-                  aria-label={`View ${project.title} — coming soon`}
+                  onClick={() => {
+                    window.history.pushState(null, '', '/projects')
+                    window.dispatchEvent(new PopStateEvent('popstate'))
+                  }}
+                  aria-label={`View ${project.title} on the Projects page`}
                 >
                   View project <span aria-hidden="true">↗</span>
                 </button>

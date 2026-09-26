@@ -3,7 +3,7 @@ import styles from './AboutTechStack.module.css'
 const groups = [
   { title: 'Front-end', skills: 'HTML · CSS · JavaScript · React · Vite', icon: 'screen' },
   { title: 'Back-end', skills: 'Supabase · REST APIs · Authentication · Databases', icon: 'database' },
-  { title: 'Programming', skills: 'Python basics', icon: 'pencil' },
+  { title: 'Programming', skills: 'Python', icon: 'pencil' },
   { title: 'Tools', skills: 'Git · GitHub · VS Code · Figma', icon: 'gear' },
 ] as const
 

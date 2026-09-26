@@ -10,7 +10,11 @@
     linear-gradient(90deg, #030303cc, transparent 58%),
     radial-gradient(ellipse 28% 46% at var(--atmosphere-x) var(--atmosphere-y), #791b1833, #340c101a 56%, transparent 85%),
     radial-gradient(ellipse 45% 15% at 68% 78%, #9c66500a, transparent 85%),
+    url('/hero-background.png'),
     linear-gradient(180deg, #030303, #080606 64%, #080707);
+  background-size: auto, auto, auto, auto, var(--hero-image-size, cover), auto;
+  background-position: center, center, center, center, var(--hero-image-position, center), center;
+  background-repeat: no-repeat;
   color: #f3ede2;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -154,6 +158,8 @@
 .swordVisual {
   --sword-height: clamp(380px, 40vw, 520px);
   position: relative;
+  left: var(--ring-offset-x, 0px);
+  top: var(--ring-offset-y, 0px);
   isolation: isolate;
   min-width: 0;
   min-height: 480px;
@@ -462,8 +468,29 @@
   }
 }
 
-@media (max-width: 767px) {
-  .hero { --atmosphere-x: 50%; --atmosphere-y: 73%; --pedestal-haze-y: 94%; }
+@media (max-width: 768px) {
+  .hero {
+    --atmosphere-x: 50%; --atmosphere-y: 73%; --pedestal-haze-y: 94%;
+    background-image:
+      radial-gradient(ellipse 85% 80% at 50% 45%, transparent 35%, #00000099 100%),
+      linear-gradient(90deg, #030303cc, transparent 58%),
+      radial-gradient(ellipse 28% 46% at var(--atmosphere-x) var(--atmosphere-y), #791b1833, #340c101a 56%, transparent 85%),
+      radial-gradient(ellipse 45% 15% at 68% 78%, #9c66500a, transparent 85%),
+      linear-gradient(180deg, #030303, #080606 64%, #080707);
+    background-size: auto;
+    background-position: center;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: var(--hero-image-top, 50%);
+    left: 0;
+    width: 100%;
+    height: var(--hero-image-height, 380px);
+    background: url('/hero-background.png') var(--hero-image-position, center) / var(--hero-image-size, cover) no-repeat;
+    mask-image: linear-gradient(transparent, #000 12%, #000 80%, transparent);
+    pointer-events: none;
+  }
   .container { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 32px; padding: 144px 5% 64px; }
   .content { max-width: 580px; }
   .title { height: clamp(120px, 34vw, 220px); }
@@ -474,6 +501,7 @@
   .swordVisual { --sword-height: 320px; min-height: 340px; }
   .swordVisual::before, .swordVisual::after { top: 50%; }
   .energySpiral, .swordAtmosphere { top: 50%; height: var(--sword-height); }
-  .swordImage { top: calc(50% - 24px); }
+  .swordImage { top: calc(50% - 27px); }
+  .swordImage canvas { scale: 0.975; transform-origin: 50% calc(50% + 22px); }
   .pedestalImage { top: calc(50% + 160px); width: min(97.5%, 225px); }
 }

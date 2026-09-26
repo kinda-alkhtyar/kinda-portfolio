@@ -32,7 +32,7 @@
   .projectNav a + a { padding: 28px 0 0; border-left: 0; border-top: 1px solid #8b694226; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .content { padding: 140px 5% 40px; }
   .back { display: inline-flex; align-items: center; min-height: 44px; font-size: 10px; }
   .heading { padding: 28px 0 30px; }
@@ -41,10 +41,15 @@
   .titleWord { max-width: 100%; overflow-wrap: anywhere; }
   .category { margin-top: 18px; gap: 12px; font-size: 13px; }
   .category span { padding-left: 12px; }
-  .gallery { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .gallery { grid-template-columns: minmax(0, 1fr); gap: 30px; overflow-x: clip; }
   .gallery .lead { padding: 8px; margin-bottom: 4px; }
   .gallery figcaption { margin-top: 10px; letter-spacing: .8px; }
   .projectNav { grid-template-columns: minmax(0, 1fr); margin-top: 48px; }
   .projectNav a { min-height: 80px; padding: 24px 0; gap: 12px; }
   .projectNav a + a { padding: 24px 0 0; border-left: 0; border-top: 1px solid #8b694226; }
+}
+
+@media (max-width: 360px) {
+  .heading h1 { font-size: 32px; }
+  .category span { border-left: 0; padding-left: 0; flex-basis: 100%; }
 }

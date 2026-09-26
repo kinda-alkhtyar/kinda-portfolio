@@ -4,9 +4,9 @@ import logo from '../assets/projects/ka-logo.png'
 const links = [
   { label: 'Home', href: '#home' },
   { label: 'Projects', href: '/projects' },
-  { label: '3D', href: '/3d' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
+  { label: '3D', href: '/3d' },
 ]
 
 export default function Navbar({ currentPage = 'home' }: { currentPage?: 'home' | 'contact' | 'projects' | '3d' }) {
