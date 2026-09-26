@@ -12,4 +12,9 @@
 }
 .companion canvas { display: block; touch-action: none; cursor: grab; }
 .companion > div { transform: scale(1.2); transform-origin: center; }
-@media (max-width: 1199px) { .companion { display: none; } }
+@media (max-width: 1199px) {
+  .companion { --companion-scale: 0.8; transform-origin: top left; }
+}
+@media (max-width: 768px) {
+  .companion { --companion-scale: 0.65; }
+}

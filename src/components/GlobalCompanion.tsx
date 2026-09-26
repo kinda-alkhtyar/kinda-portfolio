@@ -16,10 +16,23 @@ export default function GlobalCompanion({ page }: { page: string }) {
     let initialized = settledPosition.current !== null
     let animation: Animation | undefined
     let dragging = false
+    let currentScale = 0
     const update = () => {
       frame = 0
-      if (dragging || innerWidth < 1200) return
+      if (dragging) return
       const width = document.documentElement.clientWidth
+      const scale = parseFloat(getComputedStyle(element).getPropertyValue('--companion-scale')) || 1
+      if (initialized && currentScale !== scale) {
+        animation?.cancel()
+        element.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`
+        lastSection = undefined
+      }
+      currentScale = scale
+      const compact = innerWidth < 1200
+      const top = compact ? Math.max(20, ...[...document.querySelectorAll('header')]
+        .map((item) => item.getBoundingClientRect())
+        .filter((rect) => rect.top <= 0 && rect.bottom > 0 && rect.height < innerHeight / 3)
+        .map((rect) => rect.bottom + 12)) : 20
       const sections = [...document.querySelectorAll('section')]
       const section = sections.find((item) => {
         const rect = item.getBoundingClientRect()
@@ -32,24 +45,25 @@ export default function GlobalCompanion({ page }: { page: string }) {
       // The transparent canvas is wider than the sword. Check its visible silhouette
       // so full-width text boxes do not incorrectly eliminate both viewport gutters.
       const overlap = (point: { x: number; y: number }) => obstacles.reduce((area, rect) =>
-        area + Math.max(0, Math.min(point.x + 49.2, rect.right + 6) - Math.max(point.x + 10.8, rect.left - 6))
-          * Math.max(0, Math.min(point.y + 127.6, rect.bottom + 6) - Math.max(point.y - 11.6, rect.top - 6)), 0)
+        area + Math.max(0, Math.min(point.x + 49.2 * scale, rect.right + 6) - Math.max(point.x + 10.8 * scale, rect.left - 6))
+          * Math.max(0, Math.min(point.y + 127.6 * scale, rect.bottom + 6) - Math.max(point.y - 11.6 * scale, rect.top - 6)), 0)
       const safe = (point: { x: number; y: number }) => overlap(point) === 0
       element.style.visibility = 'visible'
       if (animation?.playState === 'running') return
       if (initialized && section === lastSection && safe(position)
-        && position.x + 60 <= width && position.y >= 20 && position.y + 127.6 <= innerHeight) {
+        && position.x + 60 * scale <= width && position.y >= top && position.y + 127.6 * scale <= innerHeight) {
         return
       }
       const index = Math.max(0, sections.indexOf(section!))
       const rightFirst = (index + (page === '/about' ? 1 : 0)) % 2 === 0
-      const sides = rightFirst ? [width - 60, 0] : [0, width - 60]
+      const edge = compact ? 6 * scale : 0
+      const sides = rightFirst ? [width - 60 * scale - edge, edge] : [edge, width - 60 * scale - edge]
       const heights = index % 3 === 2 ? [0.5, 0.72, 0.3] : [0.72, 0.3, 0.5]
-      const candidates = sides.flatMap((x) => heights.map((height) => ({ x, y: Math.max(100, Math.min(innerHeight - 132, innerHeight * height - 58)) })))
+      const candidates = sides.flatMap((x) => heights.map((height) => ({ x, y: Math.max(compact ? top : 100, Math.min(innerHeight - 132 * scale, innerHeight * height - 58 * scale)) })))
       // Search extra gutter slots before falling back to the least obstructed one.
       // Never hide the entire companion just because the preferred slot is occupied.
       for (const x of sides) {
-        for (let y = 20; y <= innerHeight - 136; y += 24) candidates.push({ x, y })
+        for (let y = top; y <= innerHeight - 136 * scale; y += 24) candidates.push({ x, y })
       }
       const next = candidates.find(safe) ?? candidates.reduce((best, point) => overlap(point) < overlap(best) ? point : best)
       if (initialized && next.x === position.x && next.y === position.y) {
@@ -58,14 +72,14 @@ export default function GlobalCompanion({ page }: { page: string }) {
         return
       }
       animation?.cancel()
-      const transform = (point: typeof next, scale = 1) => `translate3d(${point.x}px, ${point.y}px, 0) scale(${scale})`
+      const transform = (point: typeof next, depth = 1) => `translate3d(${point.x}px, ${point.y}px, 0) scale(${scale * depth})`
       element.style.transform = transform(next)
       if (initialized && !motion.matches) {
         const from = position
         const routes = [-45, 45, -innerHeight * 0.5, innerHeight * 0.5]
         const routePoint = (t: number, bend: number) => ({
           x: from.x + (next.x - from.x) * t,
-          y: Math.max(20, Math.min(innerHeight - 136, from.y + (next.y - from.y) * t + Math.sin(t * Math.PI) * bend)),
+          y: Math.max(top, Math.min(innerHeight - 136 * scale, from.y + (next.y - from.y) * t + Math.sin(t * Math.PI) * bend)),
         })
         const cost = (bend: number) => Array.from({ length: 25 }, (_, i) => overlap(routePoint(i / 24, bend))).reduce((a, b) => a + b, 0)
         const bend = routes.reduce((best, candidate) => cost(candidate) < cost(best) ? candidate : best)

@@ -218,15 +218,15 @@ function FloatingSword({ motion }: { motion: boolean }) {
 }
 
 export default function CompanionSword3D() {
-  const [desktop, setDesktop] = useState(false)
+  const [compact, setCompact] = useState(false)
   const [motion, setMotion] = useState(false)
 
   useEffect(() => {
     const desktopQuery = window.matchMedia('(min-width: 1200px)')
     const motionQuery = window.matchMedia('(prefers-reduced-motion: no-preference)')
     const update = () => {
-      setDesktop(desktopQuery.matches)
-      setMotion(desktopQuery.matches && motionQuery.matches)
+      setCompact(!desktopQuery.matches)
+      setMotion(motionQuery.matches)
     }
     update()
     desktopQuery.addEventListener('change', update)
@@ -237,13 +237,11 @@ export default function CompanionSword3D() {
     }
   }, [])
 
-  if (!desktop) return null
-
   return (
     <Canvas
       camera={{ position: [0, 0, 5.5], fov: paddedCameraFov }}
       style={{ position: 'absolute', top: -24, width: '100%', height: paddedCanvasHeight, overflow: 'visible' }}
-      dpr={[1, 1.5]}
+      dpr={compact ? 1 : [1, 1.5]}
       frameloop={motion ? 'always' : 'demand'}
       gl={{ alpha: true, antialias: true }}
     >
