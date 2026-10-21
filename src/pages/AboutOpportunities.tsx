@@ -1,10 +1,12 @@
 import styles from './AboutOpportunities.module.css'
+import { useI18n } from '../i18n/locale'
+import type { MessageKey } from '../i18n/messages'
 
 const details = [
-  { label: 'Experience', value: '2 years', icon: 'briefcase' },
-  { label: 'Location', value: 'Austria', icon: 'pin' },
-  { label: 'Work', value: 'Remote', icon: 'laptop' },
-  { label: 'Languages', value: 'Arabic · Turkish · German · English', icon: 'globe' },
+  { label: 'experienceLabel', value: 'experienceValue', icon: 'briefcase' },
+  { label: 'locationLabel', value: 'locationValue', icon: 'pin' },
+  { label: 'openToLabel', value: 'openToValue', icon: 'laptop' },
+  { label: 'languagesLabel', value: 'languagesValue', icon: 'globe' },
 ] as const
 
 function DetailIcon({ kind }: { kind: typeof details[number]['icon'] }) {
@@ -19,18 +21,19 @@ function DetailIcon({ kind }: { kind: typeof details[number]['icon'] }) {
 }
 
 export default function AboutOpportunities() {
+  const { t } = useI18n()
   return (
     <section className={styles.section} aria-labelledby="opportunities-heading">
       <h2 id="opportunities-heading" className={styles.heading}>
-        <span>05</span><span aria-hidden="true">—</span>Available for opportunities
+        <span>06</span><span aria-hidden="true">—</span>{t('opportunitiesHeading')}
       </h2>
       <dl className={styles.details}>
         {details.map(({ label, value, icon }) => (
           <div className={styles.detail} key={label}>
             <DetailIcon kind={icon} />
             <div className={styles.text}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
+              <dt>{t(label as MessageKey)}</dt>
+              <dd>{t(value as MessageKey)}</dd>
             </div>
           </div>
         ))}

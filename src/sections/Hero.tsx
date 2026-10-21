@@ -4,6 +4,8 @@ import sword from '../assets/sword/ka-sword-with-logo.png'
 import styles from './Hero.module.css'
 import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
+import CVDownload from '../components/CVDownload'
+import { useI18n } from '../i18n/locale'
 
 const Sword3D = lazy(() => import('../components/Sword3D'))
 const swordFallback = <img src={sword} alt="" width={1024} height={1536}
@@ -13,6 +15,7 @@ const spiralBack = 'M 185 216 C 225 223 286 235 286 256 M 112 302 C 112 322 288 
 const spiralFront = 'M 286 256 C 286 277 112 281 112 302 M 288 350 C 288 371 118 377 118 398 M 278 446 C 278 467 136 473 136 492 M 238 534 C 238 545 211 549 195 553'
 
 export default function Hero() {
+  const { t, to } = useI18n()
   const heroRef = useRef<HTMLElement>(null)
 
   useLayoutEffect(() => {
@@ -129,13 +132,15 @@ export default function Hero() {
               height={960}
             />
           </h1>
-          <p className={styles.eyebrow}>Full-stack Developer</p>
+          <p className={styles.eyebrow}>{t('role')}</p>
+          <p className={styles.intro}>{t('heroIntro')}</p>
           <div className={styles.actions}>
             <a className={styles.button} href="#projects">
-              View work <span aria-hidden="true">↗</span>
+              {t('viewProjects')} <span aria-hidden="true">↗</span>
             </a>
-            <a className={`${styles.button} ${styles.secondaryButton}`} href="#contact">
-              Let's work together
+            <CVDownload />
+            <a className={`${styles.button} ${styles.secondaryButton}`} href={to('/contact')}>
+              {t('contactMe')}
             </a>
           </div>
         </div>

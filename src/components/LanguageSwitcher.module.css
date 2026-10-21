@@ -1,0 +1,5 @@
+.switcher { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; padding: 3px; border: 1px solid #8b633a; background: #090706bd; }
+.switcher button { min-width: 33px; min-height: 32px; padding: 5px; border: 0; background: transparent; color: #c9b9a4; font: 600 10px Arial, sans-serif; letter-spacing: .6px; cursor: pointer; }
+.switcher button[aria-pressed='true'] { background: #522018; color: #ffe5bb; }
+.switcher button:hover { color: #fff; }
+.switcher button:focus-visible { outline: 2px solid #edbe7b; outline-offset: 2px; }

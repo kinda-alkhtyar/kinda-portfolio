@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import styles from './ContactForm.module.css'
+import { useI18n } from '../i18n/locale'
 
 export default function ContactForm() {
-  const [submitted, setSubmitted] = useState(false)
+  const { t } = useI18n()
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -53,28 +54,32 @@ export default function ContactForm() {
     <section ref={sectionRef} className={styles.section} aria-labelledby="message-heading">
       <form className={styles.form} onSubmit={(event) => {
         event.preventDefault()
-        setSubmitted(true)
+        const data = new FormData(event.currentTarget)
+        const name = String(data.get('name') ?? '').trim()
+        const email = String(data.get('email') ?? '').trim()
+        const message = String(data.get('message') ?? '').trim()
+        const subject = encodeURIComponent(t('emailSubject', { name }))
+        const body = encodeURIComponent(`${message}\n\n${t('emailFrom')}: ${name}\n${t('email')}: ${email}`)
+        window.location.href = `mailto:alhidyarkinda@gmail.com?subject=${subject}&body=${body}`
       }}>
         <div className={styles.header}>
-          <h2 id="message-heading"><span aria-hidden="true">//</span>Send a message</h2>
-          <p>I usually reply<br />within 24 hours.</p>
+          <h2 id="message-heading"><span aria-hidden="true">//</span>{t('messageHeading')}</h2>
+          <p>{t('emailAppNote')}</p>
         </div>
         <div className={styles.field}>
-          <label htmlFor="contact-name">Your name</label>
-          <input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Enter your name" required />
+          <label htmlFor="contact-name">{t('yourName')}</label>
+          <input id="contact-name" name="name" type="text" autoComplete="name" placeholder={t('namePlaceholder')} required onInvalid={(event) => event.currentTarget.setCustomValidity(t('formRequired'))} onInput={(event) => event.currentTarget.setCustomValidity('')} />
         </div>
         <div className={styles.field}>
-          <label htmlFor="contact-email">Your email</label>
-          <input id="contact-email" name="email" type="email" autoComplete="email" placeholder="Enter your email" required />
+          <label htmlFor="contact-email">{t('yourEmail')}</label>
+          <input id="contact-email" name="email" type="email" autoComplete="email" placeholder={t('emailPlaceholder')} required onInvalid={(event) => event.currentTarget.setCustomValidity(t(event.currentTarget.validity.valueMissing ? 'formRequired' : 'formEmailInvalid'))} onInput={(event) => event.currentTarget.setCustomValidity('')} />
         </div>
         <div className={styles.field}>
-          <label htmlFor="contact-message">Your message</label>
-          <textarea id="contact-message" name="message" rows={5} placeholder="Tell me about your project, idea or opportunity…" required />
+          <label htmlFor="contact-message">{t('yourMessage')}</label>
+          <textarea id="contact-message" name="message" rows={5} placeholder={t('messagePlaceholder')} required onInvalid={(event) => event.currentTarget.setCustomValidity(t('formRequired'))} onInput={(event) => event.currentTarget.setCustomValidity('')} />
         </div>
-        <button className={styles.submit} type="submit">Send message <span aria-hidden="true">→</span></button>
-        <p className={styles.status} role="status">{submitted
-          ? 'Your message has not been sent. Sending is not connected yet.'
-          : 'Form preview only — sending is not connected yet.'}</p>
+        <button className={styles.submit} type="submit">{t('openEmailApp')} <span aria-hidden="true">→</span></button>
+        <p className={styles.status}>{t('reviewMessage')}</p>
       </form>
     </section>
   )

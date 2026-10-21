@@ -43,8 +43,8 @@
   position: relative;
   isolation: isolate;
   max-width: 1600px;
-  min-height: 660px;
-  aspect-ratio: 1536 / 900;
+  min-height: 620px;
+  padding-bottom: 48px;
   margin: 0 auto;
   overflow: hidden;
   border-bottom: 1px solid #8b5b2e;
@@ -58,6 +58,10 @@
   .main {
     position: relative;
     isolation: isolate;
+    display: grid;
+    grid-template-columns: 5.3% 28.7% 1.6% 37.5% 1fr;
+    gap: 30px 0;
+    align-items: start;
     max-width: 1600px;
     min-height: clamp(900px, 66.6667vw, 1067px);
     overflow: hidden;
@@ -82,37 +86,29 @@
   }
 
   .main > section:first-child {
-    position: absolute;
-    inset: 0;
-    min-height: 100%;
-    aspect-ratio: auto;
+    grid-column: 1 / -1;
+    min-height: 420px;
+    padding-bottom: 0;
     border-bottom: 0;
     background: transparent;
   }
 
   .main > section:nth-child(2) {
-    position: absolute;
+    position: relative;
     z-index: 2;
-    top: 39%;
-    left: 5.3%;
-    width: 28.7%;
+    grid-column: 2;
   }
 
   .main > section:nth-child(3) {
-    position: absolute;
+    position: relative;
     z-index: 2;
-    top: calc(37% + 35px);
-    left: 35.6%;
-    width: 37.5%;
+    grid-column: 4;
   }
 
   .main > section:nth-child(4) {
-    position: absolute;
+    position: relative;
     z-index: 2;
-    right: 25%;
-    bottom: 3.8%;
-    left: 5.3%;
-    width: auto;
+    grid-column: 2 / 5;
   }
 
   .content { padding-top: clamp(112px, 8.3vw, 133px); }
@@ -214,7 +210,7 @@
 }
 
 @media (max-width: 768px) {
-  .hero { min-height: 0; aspect-ratio: auto; }
+  .hero { min-height: 0; padding-bottom: 0; }
   .content { width: 90%; margin-left: 5%; padding: 146px 0 440px; }
   .label { font-size: 10px; letter-spacing: 2.5px; margin-bottom: 18px; }
   .heading { font-size: clamp(38px, 8.6vw, 62px); line-height: .94; }

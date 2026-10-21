@@ -11,13 +11,15 @@ import swordUrl from '../assets/models/Royal_Flameblade_Review.glb?url'
 import styles from './ThreeDPage.module.css'
 import ThreeDStudioScene from './ThreeDStudioScene'
 import ThreeDFinalScene from './ThreeDFinalScene'
+import { useI18n } from '../i18n/locale'
+import type { MessageKey } from '../i18n/messages'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const hotspotDetails = {
-  modeling: { label: 'MODELING', text: 'Every form is shaped to feel precise from every angle.', position: [-0.48, 1.02, 0.34] as [number, number, number], camera: [-0.75, 1.12, 4.2] as [number, number, number] },
-  materials: { label: 'MATERIALS', text: 'Layered surfaces bring depth, texture, and character to the blade.', position: [0.55, 0.05, 0.38] as [number, number, number], camera: [0.7, 0.25, 4.1] as [number, number, number] },
-  lighting: { label: 'LIGHTING', text: 'Warm highlights and a red rim reveal the sword’s silhouette.', position: [-0.42, -1.06, 0.35] as [number, number, number], camera: [-0.7, -0.9, 4.25] as [number, number, number] },
+  modeling: { label: 'threeModeling', text: 'threeModelingText', position: [-0.48, 1.02, 0.34] as [number, number, number], camera: [-0.75, 1.12, 4.2] as [number, number, number] },
+  materials: { label: 'threeMaterials', text: 'threeMaterialsText', position: [0.55, 0.05, 0.38] as [number, number, number], camera: [0.7, 0.25, 4.1] as [number, number, number] },
+  lighting: { label: 'threeLighting', text: 'threeLightingText', position: [-0.42, -1.06, 0.35] as [number, number, number], camera: [-0.7, -0.9, 4.25] as [number, number, number] },
 }
 type HotspotKey = keyof typeof hotspotDetails
 
@@ -29,6 +31,7 @@ function ViewerModel({ reducedMotion, motionRef, studioRotationRef, detailActive
   selectedHotspot: HotspotKey | null
   onSelect: (hotspot: HotspotKey) => void
 }) {
+  const { t } = useI18n()
   const { scene } = useGLTF(swordUrl)
   const floatGroup = useRef<Group>(null)
   const { model, scale } = useMemo(() => {
@@ -46,8 +49,8 @@ function ViewerModel({ reducedMotion, motionRef, studioRotationRef, detailActive
     <group ref={studioRotationRef}><group ref={floatGroup} scale={scale}><Center><primitive object={model} /></Center></group></group>
     {detailActive && (Object.entries(hotspotDetails) as [HotspotKey, typeof hotspotDetails[HotspotKey]][]).map(([key, hotspot]) =>
       <Html key={key} position={hotspot.position} center distanceFactor={7}>
-        <button type="button" className={`${styles.hotspot}${selectedHotspot === key ? ` ${styles.hotspotSelected}` : ''}`} aria-label={`Explore ${hotspot.label.toLowerCase()}`} aria-pressed={selectedHotspot === key} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onSelect(key) }}>
-          <span aria-hidden="true" />{hotspot.label}
+        <button type="button" className={`${styles.hotspot}${selectedHotspot === key ? ` ${styles.hotspotSelected}` : ''}`} aria-label={t('threeExplore', { detail: t(hotspot.label as MessageKey) })} aria-pressed={selectedHotspot === key} onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onSelect(key) }}>
+          <span aria-hidden="true" />{t(hotspot.label as MessageKey)}
         </button>
       </Html>) }
   </group>
@@ -193,6 +196,7 @@ function CameraPresence({ reducedMotion }: { reducedMotion: boolean }) {
 }
 
 export default function ThreeDPage() {
+  const { t, to, lines } = useI18n()
   const mainRef = useRef<HTMLElement>(null)
   const scrollCopyRef = useRef<HTMLDivElement>(null)
   const detailCopyRef = useRef<HTMLDivElement>(null)
@@ -224,12 +228,12 @@ export default function ThreeDPage() {
     <Navbar currentPage="3d" />
     <main ref={mainRef} className={styles.main}>
       <div className={styles.copy}>
-        <p className={styles.eyebrow}>Interactive studio / 3D</p>
-        <h1>3D <span>EXPERIENCES</span></h1>
-        <p className={styles.description}>We create interactive 3D experiences for the web.</p>
-        <p className={styles.instruction}>Drag to rotate <span aria-hidden="true">·</span> Scroll or pinch to zoom</p>
+        <p className={styles.eyebrow}>{t('threeEyebrow')}</p>
+        <h1>{lines('threeHeading')[0]} <span>{lines('threeHeading')[1]}</span></h1>
+        <p className={styles.description}>{t('threeIntro')}</p>
+        <p className={styles.instruction}>{t('threeInstruction')}</p>
       </div>
-      <div className={styles.viewer} role="group" aria-label="Interactive 3D Royal Flameblade sword. Drag to rotate; scroll or pinch to zoom.">
+      <div className={styles.viewer} role="group" aria-label={t('threeViewer')}>
         <div ref={studioBackdropRef} className={styles.studioBackdrop} aria-hidden="true" />
         <Canvas
           camera={{ position: [0, 0, 7.4], fov: 40 }}
@@ -262,36 +266,36 @@ export default function ThreeDPage() {
           </Suspense>
           <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.08} rotateSpeed={0.65} zoomSpeed={0.75} minDistance={4} maxDistance={10} />
         </Canvas>
-        <span className={styles.dragIndicator} aria-hidden="true">DRAG TO EXPLORE</span>
+        <span className={styles.dragIndicator} aria-hidden="true">{t('threeDrag')}</span>
         {selectedHotspot && detailActive && !studioActive && <aside className={styles.infoPanel} aria-live="polite">
-          <button type="button" className={styles.closePanel} onClick={() => setSelectedHotspot(null)} aria-label="Close detail">×</button>
-          <p>0{Object.keys(hotspotDetails).indexOf(selectedHotspot) + 1} / DETAIL</p>
-          <h3>{hotspotDetails[selectedHotspot].label}</h3>
-          <p>{hotspotDetails[selectedHotspot].text}</p>
+          <button type="button" className={styles.closePanel} onClick={() => setSelectedHotspot(null)} aria-label={t('threeClose')}>×</button>
+          <p>0{Object.keys(hotspotDetails).indexOf(selectedHotspot) + 1} / {t('threeDetail')}</p>
+          <h3>{t(hotspotDetails[selectedHotspot].label as MessageKey)}</h3>
+          <p>{t(hotspotDetails[selectedHotspot].text as MessageKey)}</p>
         </aside>}
       </div>
       <div ref={scrollCopyRef} className={styles.scrollCopy}>
-        <p className={styles.sceneLabel}>01 / THE PROCESS</p>
-        <h2>CRAFTED IN 3D</h2>
-        <p>Modeling · Materials · Lighting · Animation</p>
+        <p className={styles.sceneLabel}>{t('threeProcessLabel')}</p>
+        <h2>{t('threeProcessHeading')}</h2>
+        <p>{t('threeProcessText')}</p>
       </div>
       <div ref={detailCopyRef} className={styles.detailCopy}>
-        <p className={styles.sceneLabel}>02 / CLOSE-UP</p>
-        <h2>EXPLORE THE DETAILS</h2>
-        <p>Select a point on the sword to discover how it was made.</p>
+        <p className={styles.sceneLabel}>{t('threeCloseupLabel')}</p>
+        <h2>{t('threeCloseupHeading')}</h2>
+        <p>{t('threeCloseupText')}</p>
       </div>
       <div ref={studioCopyRef} className={styles.studioCopy}>
-        <p className={styles.sceneLabel}>03 / THE STUDIO</p>
-        <h2>BUILT FOR THE WEB</h2>
-        <p>Interactive 3D experiences optimized for modern websites.</p>
+        <p className={styles.sceneLabel}>{t('threeStudioLabel')}</p>
+        <h2>{t('threeStudioHeading')}</h2>
+        <p>{t('threeStudioText')}</p>
       </div>
       <section ref={finalCopyRef} className={styles.finalCopy} aria-labelledby="three-d-final-heading">
-        <p className={styles.sceneLabel}>04 / THE NEXT IDEA</p>
-        <h2 id="three-d-final-heading">LET’S BUILD SOMETHING BEYOND FLAT.</h2>
-        <p>3D experiences, interactive websites and digital worlds.</p>
-        <a className={styles.finalAction} href="/contact#contact-name">START A PROJECT <span aria-hidden="true">↗</span></a>
+        <p className={styles.sceneLabel}>{t('threeFinalLabel')}</p>
+        <h2 id="three-d-final-heading">{t('threeFinalHeading')}</h2>
+        <p>{t('threeFinalText')}</p>
+        <a className={styles.finalAction} href={to('/contact#contact-name')}>{t('startProject')} <span aria-hidden="true">↗</span></a>
       </section>
-      <div className={styles.footer}><span>01 / INTERACTIVE OBJECT</span><span>ROYAL FLAMEBLADE</span></div>
+      <div className={styles.footer}><span>{t('threeFooterLeft')}</span><span>{t('threeFooterRight')}</span></div>
     </main>
   </div>
 }

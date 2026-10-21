@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
 import sword from '../assets/projects-page/contact-hero-sword..png'
 import styles from './ContactFinalCTA.module.css'
+import LineBreaks from '../i18n/LineBreaks'
+import type { MessageKey } from '../i18n/messages'
 
 const services = [
-  { label: <>Websites<br />&amp; apps</>, icon: 'diamond' },
-  { label: <>Games</>, icon: 'game' },
-  { label: <>Creative<br />solutions</>, icon: 'pen' },
-  { label: <>Remote<br />worldwide</>, icon: 'globe' },
+  { label: 'serviceWeb', icon: 'diamond' },
+  { label: 'serviceInteractive', icon: 'game' },
+  { label: 'serviceCreative', icon: 'pen' },
+  { label: 'serviceRemote', icon: 'globe' },
 ] as const
 
 function ServiceIcon({ kind }: { kind: typeof services[number]['icon'] }) {
@@ -85,16 +87,16 @@ export default function ContactFinalCTA() {
   return (
     <section ref={sectionRef} className={styles.section} aria-labelledby="contact-final-heading">
       <div className={styles.invitation}>
-        <h2 id="contact-final-heading"><a href="#contact-name">Let’s build<br />a brighter tomorrow.</a></h2>
+        <h2 id="contact-final-heading"><a href="#contact-name"><LineBreaks id="contactFinal" /></a></h2>
         <span className={styles.rule} aria-hidden="true" />
       </div>
       <ul className={styles.services}>
-        {services.map(({ label, icon }) => <li key={icon}><ServiceIcon kind={icon} /><span>{label}</span></li>)}
+        {services.map(({ label, icon }) => <li key={icon}><ServiceIcon kind={icon} /><span><LineBreaks id={label as MessageKey} /></span></li>)}
       </ul>
       <div className={styles.scene} aria-hidden="true">
         <img src={sword} alt="" width={724} height={2172} loading="lazy" decoding="async" />
       </div>
-      <p className={styles.caption}>More<br />than<br />code</p>
+      <p className={styles.caption}><LineBreaks id="moreThanCode" /></p>
     </section>
   )
 }

@@ -507,3 +507,5 @@
   .swordImage canvas { scale: 0.975; transform-origin: 50% calc(50% + 22px); }
   .pedestalImage { top: calc(50% + 160px); width: min(97.5%, 225px); }
 }
+.intro { max-width: 560px; margin: 0 0 22px; color: #e3d4c5; font-size: clamp(14px, 1.4vw, 19px); line-height: 1.55; }
+.actions { flex-wrap: wrap; }

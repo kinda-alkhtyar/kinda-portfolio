@@ -1,9 +1,11 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
 import styles from './GlobalCompanion.module.css'
+import { useI18n } from '../i18n/locale'
 
 const CompanionSword3D = lazy(() => import('./CompanionSword3D'))
 
 export default function GlobalCompanion({ page }: { page: string }) {
+  const { t } = useI18n()
   const host = useRef<HTMLDivElement>(null)
   const settledPosition = useRef<{ x: number; y: number } | null>(null)
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function GlobalCompanion({ page }: { page: string }) {
       motion.removeEventListener('change', reduce)
     }
   }, [page])
-  return <div ref={host} className={styles.companion} aria-label="Drag to rotate companion sword">
+  return <div ref={host} className={styles.companion} aria-label={t('companionAria')}>
     <Suspense fallback={null}><CompanionSword3D /></Suspense>
   </div>
 }

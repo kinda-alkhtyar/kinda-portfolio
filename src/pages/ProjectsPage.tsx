@@ -8,23 +8,27 @@ import aqarati from '../assets/projects-page/aqarati-laptop-mockup.png'
 import taaniqi from '../assets/projects-page/taaniqi-laptop-mockup.png'
 import yumna from '../assets/projects-page/yumna-portfolio-laptop-mockup.png'
 import fruitMilk from '../assets/projects-page/fruit-milk-card.png'
+import portfolioPreview from '../assets/case-studies/personal-portfolio/portfolio-preview.png'
 import styles from './ProjectsPage.module.css'
 import { projectDetails } from './projectDetails'
 import { finishProjectTransition, openProject } from './projectTransition'
+import { useI18n } from '../i18n/locale'
+import LineBreaks from '../i18n/LineBreaks'
+import type { MessageKey } from '../i18n/messages'
 
 const projects = [
-  { number: '01', title: 'Aqarati Syria', subtitle: 'Real estate platform', image: aqarati },
-  { number: '02', title: 'Taaniqi with Iman', subtitle: 'Fashion & e-commerce', image: taaniqi },
-  { number: '03', title: 'Yumna Al-Muallem Portfolio', subtitle: 'Design portfolio', image: yumna },
-  { number: '04', title: 'FruitMilk', subtitle: '', image: fruitMilk },
-  { number: '05', title: 'Coming Soon', subtitle: 'A new project is on its way.', image: comingSoon },
-  { number: '06', title: 'Coming Soon', subtitle: 'A new project is on its way.', image: comingSoon },
+  { number: '01', title: 'Aqarati Syria', subtitle: 'projectsAqarati', image: aqarati },
+  { number: '02', title: 'Taaniqi with Iman', subtitle: 'projectsTaaniqi', image: taaniqi },
+  { number: '03', title: 'Yumna Al-Muallem Portfolio', subtitle: 'projectsYumna', image: yumna },
+  { number: '04', title: 'FruitMilk', subtitle: 'projectsFruit', image: fruitMilk },
+  { number: '05', title: 'Personal Developer Portfolio', subtitle: 'projectsPersonal', image: portfolioPreview },
+  { number: '06', title: 'Coming Soon', subtitle: 'comingSoonText', image: comingSoon },
 ]
 
 export default function ProjectsPage() {
+  const { t, to, locale } = useI18n()
   const pageRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
-  const paginationRef = useRef<HTMLElement>(null)
   const footerRef = useRef<HTMLElement>(null)
 
   useLayoutEffect(() => {
@@ -33,13 +37,12 @@ export default function ProjectsPage() {
     const slug = sessionStorage.getItem('project-transition-return')
     if (!slug) return
     sessionStorage.removeItem('project-transition-return')
-    finishProjectTransition(page, page.querySelector<HTMLElement>(`[data-project-slug="${slug}"] .${styles.preview}`), '/projects')
-  }, [])
+    finishProjectTransition(page, page.querySelector<HTMLElement>(`[data-project-slug="${slug}"] .${styles.preview}`), to('/projects'))
+  }, [to])
 
   useEffect(() => {
-    const pagination = paginationRef.current
     const footer = footerRef.current
-    if (!pagination || !footer) return
+    if (!footer) return
 
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const entered = new Set<Element>()
@@ -70,7 +73,7 @@ export default function ProjectsPage() {
         observer.disconnect()
         animations.forEach((animation) => animation.cancel())
       } else {
-        ;[pagination, footer].forEach((element) => {
+        ;[footer].forEach((element) => {
           if (!entered.has(element)) observer.observe(element)
         })
       }
@@ -134,61 +137,53 @@ export default function ProjectsPage() {
             <img src={sword} alt="" fetchPriority="high" />
           </div>
           <div className={styles.heroContent}>
-            <p className={styles.eyebrow}><span>03</span><span aria-hidden="true">—</span>Projects</p>
+            <p className={styles.eyebrow}><span>03</span><span aria-hidden="true">—</span>{t('projectsEyebrow')}</p>
             <h1 id="projects-heading" className={styles.heading}>
               <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
                 <defs><filter id="projects-heading-gold" colorInterpolationFilters="sRGB">
                   <feFlood floodColor="#edbe7b" /><feComposite in2="SourceAlpha" operator="in" />
                 </filter></defs>
               </svg>
-              <img src={heading} alt="Projects" width={2172} height={724} />
+              {locale === 'en'
+                ? <img src={heading} alt={t('projectsEyebrow')} width={2172} height={724} />
+                : <span className={styles.localizedHeading}>{t('projectsEyebrow')}</span>}
             </h1>
-            <p className={styles.subtitle}>Digital products. Real impact.</p>
-            <div className={styles.filters} role="group" aria-label="Project filters (preview only)">
-              <button type="button" className={styles.selected} aria-pressed="true" aria-disabled="true">All</button>
-              <button type="button" aria-pressed="false" aria-disabled="true">Websites</button>
-              <button type="button" aria-pressed="false" aria-disabled="true">Apps</button>
-            </div>
+            <p className={`${styles.subtitle}${locale === 'en' ? '' : ` ${styles.localizedSubtitle}`}`}>{t('projectsSubtitle')}</p>
           </div>
-          <p className={styles.verticalWords}>Ideas<br />Code<br />Products<br />A better<br />Tomorrow</p>
+          <p className={styles.verticalWords}><LineBreaks id="projectsWords" /></p>
         </section>
 
         <section className={styles.work} aria-labelledby="selected-work-heading">
-          <h2 id="selected-work-heading" className={styles.sectionHeading}>Selected work</h2>
+          <h2 id="selected-work-heading" className={styles.sectionHeading}>{t('projectsSelected')}</h2>
           <div ref={cardsRef} className={styles.grid}>
             {projects.map((project) => (
               <article className={styles.card} key={project.number} data-project-slug={projectDetails[Number(project.number) - 1]?.slug} aria-labelledby={`work-${project.number}`}>
-                <div className={styles.cardTop}><span>{project.number}</span><span>Website</span></div>
-                <div className={`${styles.preview}${Number(project.number) > 4 ? ` ${styles.comingSoon}` : ''}`}
-                  role={Number(project.number) <= 4 ? 'link' : undefined}
-                  tabIndex={Number(project.number) <= 4 ? 0 : undefined}
-                  aria-label={Number(project.number) <= 4 ? `View ${project.title} project details` : undefined}
-                  onClick={Number(project.number) <= 4 ? (event) => openProject(event, event.currentTarget, `/projects/${projectDetails[Number(project.number) - 1].slug}`) : undefined}
-                  onKeyDown={Number(project.number) <= 4 ? (event) => { if (event.key === 'Enter') openProject(event, event.currentTarget, `/projects/${projectDetails[Number(project.number) - 1].slug}`) } : undefined}>
-                  <img src={project.image} alt={Number(project.number) > 4 ? '' : `${project.title} website preview`} loading="lazy" decoding="async" />
-                </div>
+                <div className={styles.cardTop}><span>{project.number}</span><span>{t('website')}</span></div>
+                {projectDetails[Number(project.number) - 1] ? (
+                  <a className={styles.preview}
+                    href={to(`/projects/${projectDetails[Number(project.number) - 1].slug}`)}
+                    aria-label={t('projectsViewDetails', { project: project.title })}
+                    onClick={(event) => openProject(event, event.currentTarget, event.currentTarget.pathname)}>
+                    <img src={project.image} alt={t('projectsPreview', { project: project.title })} loading="lazy" decoding="async" />
+                  </a>
+                ) : <div className={`${styles.preview} ${styles.comingSoon}`}>
+                  <img src={project.image} alt="" loading="lazy" decoding="async" />
+                </div>}
                 <div className={styles.cardBottom}>
-                  <div><h3 id={`work-${project.number}`}>{project.title}</h3><p>{project.subtitle}</p></div>
+                  <div><h3 id={`work-${project.number}`}>{project.number === '06' ? t('comingSoon') : project.title}</h3><p>{t(project.subtitle as MessageKey)}</p></div>
                   {projectDetails[Number(project.number) - 1] ? (
-                    <a className={styles.arrow} href={`/projects/${projectDetails[Number(project.number) - 1].slug}`} onClick={(event) => openProject(event, event.currentTarget.closest('article')?.querySelector(`.${styles.preview}`) ?? null, event.currentTarget.pathname)} aria-label={`View ${project.title} project details`}>↗</a>
+                    <a className={styles.arrow} href={to(`/projects/${projectDetails[Number(project.number) - 1].slug}`)} onClick={(event) => openProject(event, event.currentTarget.closest('article')?.querySelector(`.${styles.preview}`) ?? null, event.currentTarget.pathname)} aria-label={t('projectsViewDetails', { project: project.title })}>↗</a>
                   ) : <span className={styles.arrow} aria-hidden="true">↗</span>}
                 </div>
               </article>
             ))}
           </div>
-          <nav ref={paginationRef} className={styles.pagination} aria-label="Projects pagination (preview only)">
-            <button type="button" aria-label="Previous page" aria-disabled="true">←</button>
-            <button type="button" aria-current="page" aria-disabled="true">1</button>
-            <button type="button" aria-label="Page 2" aria-disabled="true">2</button>
-            <button type="button" aria-label="Page 3" aria-disabled="true">3</button>
-            <button type="button" aria-label="Next page" aria-disabled="true">→</button>
-          </nav>
         </section>
       </main>
       <footer ref={footerRef} className={styles.footer}>
-        <p>Let’s<br />build a brighter<br />tomorrow.</p>
+        <p>{t('projectsFooter')}</p>
         <div className={styles.footerMark}><img src={logo} alt="KA" width={1536} height={1024} /></div>
-        <blockquote>“Better digital experiences for a brighter tomorrow.”</blockquote>
+        <blockquote>“{t('projectsQuote')}”</blockquote>
       </footer>
     </div>
   )

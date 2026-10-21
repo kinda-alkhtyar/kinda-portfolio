@@ -55,3 +55,10 @@
 }
 
 .heading h1, .projectNav strong { color: #edbe7b; }
+.summary { max-width: 700px; margin: 20px 0 30px; color: #d8c9b9; font-size: clamp(15px, 1.5vw, 20px); line-height: 1.6; }
+.stack { margin: -12px 0 28px; color: #d8c9b9; font-size: 13px; line-height: 1.6; }
+.stack strong { margin-right: 8px; color: #edbe7b; font-weight: 600; }
+.liveLink { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 48px; max-width: 100%; padding: 13px 22px; border: 1px solid #c69a62; background: linear-gradient(110deg, #4b170e, #1c0d09); color: #f8e4c5; font-size: 12px; font-weight: 600; letter-spacing: 1.3px; line-height: 1.4; text-align: center; text-decoration: none; text-transform: uppercase; transition: background-color 180ms ease, border-color 180ms ease; }
+.liveLink:hover { border-color: #f0c48c; background: #642517; }
+@media (max-width: 680px) { .liveLink { min-height: 48px; width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .liveLink { transition: none; } }

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -9,29 +9,26 @@ import taaniqiLaptop from '../assets/projects-page/taaniqi-laptop-mockup.png'
 import taaniqiMobile from '../assets/projects-page/taaniqi-mobile-mockup.png'
 import yumnaLaptop from '../assets/projects-page/yumna-portfolio-laptop-mockup.png'
 import yumnaMobile from '../assets/projects-page/yumna-portfolio-mobile-mockup.png'
+import { useI18n } from '../i18n/locale'
+import type { MessageKey } from '../i18n/messages'
 
 gsap.registerPlugin(ScrollTrigger)
-
-const projectPreviews = [aqaratiLaptop, aqaratiMobile, taaniqiLaptop, taaniqiMobile, yumnaLaptop, yumnaMobile]
 
 const projects = [
   {
     number: '01',
     title: 'Aqarati Syria',
-    description: 'A real estate platform connecting buyers with properties across Syria.',
-    tags: ['Full-stack', 'Real estate', 'Web app'],
+    description: 'homeAqarati', tags: 'homeAqaratiTags',
   },
   {
     number: '02',
     title: 'Taaniqi with Iman',
-    description: 'An Arabic fashion catalog for discovering jalabiyas and abayas.',
-    tags: ['E-commerce', 'Catalog', 'UI/UX'],
+    description: 'homeTaaniqi', tags: 'homeTaaniqiTags',
   },
   {
     number: '03',
     title: 'Yumna Al-Muallem Portfolio',
-    description: 'A visual portfolio showcasing branding, graphic design, and UI/UX projects.',
-    tags: ['Portfolio', 'Branding', 'UI/UX'],
+    description: 'homeYumna', tags: 'homeYumnaTags',
   },
 ]
 
@@ -70,10 +67,7 @@ function useProjectReveal(projectRef: RefObject<HTMLElement | null>, mockupClass
 }
 
 export default function Projects() {
-  useEffect(() => {
-    projectPreviews.forEach((src) => { const image = new Image(); image.src = src })
-  }, [])
-
+  const { t, to, lines } = useI18n()
   const firstProjectRef = useRef<HTMLElement>(null)
   const secondProjectRef = useRef<HTMLElement>(null)
   const thirdProjectRef = useRef<HTMLElement>(null)
@@ -87,9 +81,9 @@ export default function Projects() {
       <div className={styles.container}>
         <header className={styles.heading}>
           <h2 id="projects-title" className={styles.title}>
-            Selected <span>Work</span>
+            {lines('homeSelected')[0]} <span>{lines('homeSelected')[1]}</span>
           </h2>
-          <p className={styles.subtitle}>Real projects. Meaningful impact.</p>
+          <p className={styles.subtitle}>{t('homeSubtitle')}</p>
         </header>
 
         <div className={styles.list}>
@@ -106,20 +100,20 @@ export default function Projects() {
                 <h3 id={`project-${project.number}`} className={styles.projectTitle}>
                   {project.title}
                 </h3>
-                <p className={styles.description}>{project.description}</p>
-                <ul className={styles.tags} aria-label="Project categories">
-                  {project.tags.map((tag) => <li key={tag}>{tag}</li>)}
+                <p className={styles.description}>{t(project.description as MessageKey)}</p>
+                <ul className={styles.tags} aria-label={t('projectCategories')}>
+                  {t(project.tags as MessageKey).split('|').map((tag) => <li key={tag}>{tag}</li>)}
                 </ul>
                 <button
                   className={styles.button}
                   type="button"
                   onClick={() => {
-                    window.history.pushState(null, '', '/projects')
+                    window.history.pushState(null, '', to('/projects'))
                     window.dispatchEvent(new PopStateEvent('popstate'))
                   }}
-                  aria-label={`View ${project.title} on the Projects page`}
+                  aria-label={t('homeViewAria', { project: project.title })}
                 >
-                  View project <span aria-hidden="true">↗</span>
+                  {t('homeView')} <span aria-hidden="true">↗</span>
                 </button>
               </div>
 
@@ -128,18 +122,20 @@ export default function Projects() {
                   <img
                     className={styles.aqaratiLaptop}
                     src={aqaratiLaptop}
-                    alt="Aqarati Syria website displayed on a laptop"
+                    alt={t('homeMockupLaptop', { project: 'Aqarati Syria' })}
                     width={1536}
                     height={1024}
                     loading="lazy"
+                    decoding="async"
                   />
                   <img
                     className={styles.aqaratiMobile}
                     src={aqaratiMobile}
-                    alt="Aqarati Syria mobile website displayed on a phone"
+                    alt={t('homeMockupMobile', { project: 'Aqarati Syria' })}
                     width={1024}
                     height={1536}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ) : project.number === '02' ? (
@@ -147,18 +143,20 @@ export default function Projects() {
                   <img
                     className={styles.taaniqiLaptop}
                     src={taaniqiLaptop}
-                    alt="Taaniqi with Iman website displayed on a laptop"
+                    alt={t('homeMockupLaptop', { project: 'Taaniqi with Iman' })}
                     width={1536}
                     height={1024}
                     loading="lazy"
+                    decoding="async"
                   />
                   <img
                     className={styles.taaniqiMobile}
                     src={taaniqiMobile}
-                    alt="Taaniqi with Iman mobile website displayed on a phone"
+                    alt={t('homeMockupMobile', { project: 'Taaniqi with Iman' })}
                     width={1024}
                     height={1536}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
               ) : (
@@ -166,18 +164,20 @@ export default function Projects() {
                   <img
                     className={styles.yumnaLaptop}
                     src={yumnaLaptop}
-                    alt="Yumna Al-Muallem portfolio displayed on a laptop"
+                    alt={t('homeMockupLaptop', { project: 'Yumna Al-Muallem Portfolio' })}
                     width={1536}
                     height={1024}
                     loading="lazy"
+                    decoding="async"
                   />
                   <img
                     className={styles.yumnaMobile}
                     src={yumnaMobile}
-                    alt="Yumna Al-Muallem mobile portfolio displayed on a phone"
+                    alt={t('homeMockupMobile', { project: 'Yumna Al-Muallem Portfolio' })}
                     width={1024}
                     height={1536}
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
               )}

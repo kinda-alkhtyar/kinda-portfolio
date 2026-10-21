@@ -18,18 +18,20 @@
 @media (prefers-reduced-motion: no-preference) {
   .hero .content > .eyebrow,
   .hero .headingWrap,
-  .hero .name,
-  .hero .role,
-  .hero .description,
+  .hero .introHeadline,
+  .hero .introLead,
+  .hero .introSupport,
+  .hero .badges,
   .hero .actions > *,
   .hero .scene img {
     animation: heroEntrance .85s cubic-bezier(.22, 1, .36, 1) backwards;
   }
 
   .hero .headingWrap { animation-delay: .1s; }
-  .hero .name { animation-delay: .2s; }
-  .hero .role { animation-delay: .26s; }
-  .hero .description { animation-delay: .32s; }
+  .hero .introHeadline { animation-delay: .2s; }
+  .hero .introLead { animation-delay: .26s; }
+  .hero .introSupport { animation-delay: .32s; }
+  .hero .badges { animation-delay: .38s; }
   .hero .actions > :first-child { animation-delay: .42s; }
   .hero .actions > :last-child { animation-delay: .5s; }
   .hero .scene img { animation-duration: 1.15s; animation-delay: .18s; }
@@ -41,7 +43,7 @@
   width: 100%;
   max-width: 1600px;
   min-height: 470px;
-  aspect-ratio: 1024 / 470;
+  padding-bottom: clamp(48px, 5vw, 80px);
   margin: 0 auto;
   overflow: hidden;
   border-bottom: 1px solid #8b5b2e;
@@ -281,4 +283,32 @@
   .purposeLabels { right: 5%; bottom: 24px; font-size: 9px; }
 }
 
+@media (max-width: 768px) { .availability { display: none; } }
+
 .heading { color: #edbe7b; background-image: linear-gradient(#edbe7b, #edbe7b); -webkit-text-fill-color: #edbe7b; }
+.hero .content { width: min(44%, 590px); }
+.introduction { max-width: 540px; margin-top: clamp(30px, 3vw, 46px); }
+.introHeadline { max-width: 20ch; margin: 0 0 16px; color: #f5e7d4; font: 500 clamp(29px, 2.7vw, 42px)/1.08 'Cormorant Garamond', Georgia, serif; letter-spacing: -.015em; }
+.introLead { max-width: 54ch; margin: 0; color: #f6f0e7; font-size: clamp(15px, 1.3vw, 18px); line-height: 1.55; }
+.introSupport { max-width: 58ch; margin: 12px 0 0; color: #c9c0b4; font-size: clamp(14px, 1.12vw, 16px); line-height: 1.6; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; max-width: 540px; margin: 22px 0 24px; padding: 0; list-style: none; }
+.badges li { padding: 7px 11px; border: 1px solid #9b7049; background: #1b120dc9; color: #ead4b3; font-size: 11px; letter-spacing: .04em; line-height: 1.3; }
+.hero .actions { flex-wrap: wrap; align-items: flex-start; }
+.hero .secondaryButton { min-height: 44px; border-color: #d9ab78; background: #340b08; }
+@media (max-width: 768px) {
+  .hero { padding-bottom: 0; }
+  .hero .content { width: 90%; }
+  .introduction { margin-top: 30px; }
+  .introHeadline { font-size: clamp(29px, 5vw, 38px); }
+}
+@media (max-width: 600px) {
+  .hero .content { padding-bottom: 340px; }
+  .introHeadline { font-size: clamp(28px, 8vw, 34px); }
+  .introLead, .introSupport { font-size: 15px; }
+  .badges { margin-bottom: 22px; }
+  .hero .secondaryButton { flex: 0 1 auto; }
+}
+.certification { max-width: 1600px; margin: auto; padding: 35px 5.4%; border-bottom: 1px solid #8b5b2e; background: #030302; color: #f5f2ec; }
+.certification > p:first-child { color: #edbe7b; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+.certification h2 { margin: 12px 0; color: #edbe7b; font: 500 clamp(30px, 4vw, 54px) 'Cormorant Garamond', Georgia, serif; }
+.certification > p:last-child { margin: 0; line-height: 1.5; }

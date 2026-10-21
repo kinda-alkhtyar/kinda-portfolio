@@ -6,6 +6,10 @@ import AboutBring from './AboutBring'
 import AboutTechStack from './AboutTechStack'
 import AboutOpportunities from './AboutOpportunities'
 import AboutFinalCTA from './AboutFinalCTA'
+import CVDownload from '../components/CVDownload'
+import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useI18n } from '../i18n/locale'
+import LineBreaks from '../i18n/LineBreaks'
 
 function AccentIcon({ kind }: { kind: 'ideas' | 'code' | 'impact' }) {
   return (
@@ -18,6 +22,7 @@ function AccentIcon({ kind }: { kind: 'ideas' | 'code' | 'impact' }) {
 }
 
 export default function AboutPage() {
+  const { t, to } = useI18n()
   return (
     <main className={styles.page}>
       <section className={styles.hero} aria-labelledby="about-heading">
@@ -26,46 +31,50 @@ export default function AboutPage() {
         </div>
 
         <header className={styles.header}>
-          <nav className={styles.nav} aria-label="Main navigation">
-            <a className={styles.logo} href="/" aria-label="Kinda Alhidyar home">
+          <nav className={styles.nav} aria-label={t('navLabel')}>
+            <a className={styles.logo} href={to('/')} aria-label={t('navLogo')}>
               <img src={logo} alt="" width={1536} height={1024} />
             </a>
             <ul className={styles.links}>
-              <li><a href="/">Home</a></li>
-              <li><a href="/#projects">Projects</a></li>
-              <li><a href="/about" aria-current="page">About</a></li>
-              <li><a href="/contact">Contact</a></li>
-              <li><a href="/3d">3D</a></li>
+              <li><a href={to('/')}>{t('navHome')}</a></li>
+              <li><a href={to('/projects')}>{t('navProjects')}</a></li>
+              <li><a href={to('/about')} aria-current="page">{t('navAbout')}</a></li>
+              <li><a href={to('/contact')}>{t('navContact')}</a></li>
+              <li><a href={to('/3d')}>{t('nav3d')}</a></li>
             </ul>
-            <span className={styles.availability}><span aria-hidden="true" />Available for opportunities</span>
+            <LanguageSwitcher />
+            <span className={styles.availability}><span aria-hidden="true" />{t('navOpportunities')}</span>
           </nav>
         </header>
 
         <div className={styles.content}>
-          <p className={styles.eyebrow}><span>01</span><span aria-hidden="true">—</span>About</p>
+          <p className={styles.eyebrow}><span>01</span><span aria-hidden="true">—</span>{t('aboutEyebrow')}</p>
           <div className={styles.headingWrap}>
             <svg className={styles.flourish} viewBox="0 0 370 132" fill="none" aria-hidden="true">
               <path d="M19 72C-22 82-7 140 50 129M42 15C106-8 123 16 151 10M166 10C188-1 225 6 242 17" stroke="url(#about-gold)" strokeWidth=".8" />
               <defs><linearGradient id="about-gold"><stop stopColor="#cf9850" /><stop offset=".5" stopColor="#ffe5a2" /><stop offset="1" stopColor="#724022" /></linearGradient></defs>
             </svg>
-            <h1 id="about-heading" className={styles.heading}>Behind<br />The Code</h1>
+            <h1 id="about-heading" className={styles.heading}><LineBreaks id="aboutHeading" /></h1>
           </div>
-          <p className={styles.name}>I’m Kinda Alhidyar</p>
-          <p className={styles.role}>Full-Stack Developer</p>
-          <p className={styles.description}>Building modern web experiences<br />from idea to launch.</p>
+          <div className={styles.introduction}>
+            <h2 className={styles.introHeadline}>{t('aboutHeroHeadline')}</h2>
+            <p className={styles.introLead}>{t('aboutHeroIntro')}</p>
+            <p className={styles.introSupport}>{t('aboutHeroSupport')}</p>
+            <ul className={styles.badges} aria-label={t('skillsHeading')}>
+              <li>React</li><li>JavaScript</li>
+              <li>{t('aboutBadgeResponsive')}</li><li>{t('aboutBadgeInteractive')}</li>
+            </ul>
+          </div>
           <div className={styles.actions}>
-            <a className={styles.primaryButton} href="/Kinda_Alkhityar_CV_Same_Design_Updated.pdf" target="_blank" rel="noopener noreferrer">
-              Download CV
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M5 13v4h10v-4" /></svg>
-            </a>
-            <a className={styles.secondaryButton} href="/contact">Let’s connect <span aria-hidden="true">→</span></a>
+            <a className={styles.secondaryButton} href={to('/projects')}>{t('aboutExplore')} <span aria-hidden="true">→</span></a>
+            <CVDownload labelKey="aboutCvDownload" />
           </div>
-          <p className={styles.motto}>Turning<br />ideas into<br />reality</p>
+          <p className={styles.motto}><LineBreaks id="aboutMotto" /></p>
         </div>
 
-        <ul className={styles.labels} aria-label="Ideas, code, impact">
+        <ul className={styles.labels} aria-label={t('aboutLabels')}>
           {(['ideas', 'code', 'impact'] as const).map((kind) => (
-            <li key={kind}><span className={styles.connector} aria-hidden="true" /><AccentIcon kind={kind} /><span>{kind}</span></li>
+            <li key={kind}><span className={styles.connector} aria-hidden="true" /><AccentIcon kind={kind} /><span>{t(({ ideas: 'aboutIdeas', code: 'aboutCode', impact: 'aboutImpact' } as const)[kind])}</span></li>
           ))}
         </ul>
       </section>
@@ -74,14 +83,19 @@ export default function AboutPage() {
           <img src={purposeScene} alt="" width={2079} height={756} loading="lazy" decoding="async" />
         </div>
         <div className={styles.purposeContent}>
-          <p className={styles.eyebrow}><span>02</span><span aria-hidden="true">—</span>My purpose</p>
-          <h2 id="purpose-heading" className={`${styles.heading} ${styles.purposeHeading}`}>A Clearer<br />Purpose</h2>
-          <p className={styles.purposeDescription}>I turn ideas into functional, reliable<br />and user-friendly web experiences.</p>
+          <p className={styles.eyebrow}><span>02</span><span aria-hidden="true">—</span>{t('purposeEyebrow')}</p>
+          <h2 id="purpose-heading" className={`${styles.heading} ${styles.purposeHeading}`}><LineBreaks id="purposeHeading" /></h2>
+          <p className={styles.purposeDescription}>{t('purposeDescription')}</p>
         </div>
-        <p className={styles.purposeLabels}>Learn<br />Build<br />Improve<br />Repeat</p>
+        <p className={styles.purposeLabels}><LineBreaks id="purposeWords" /></p>
       </section>
       <AboutBring />
       <AboutTechStack />
+      <section className={styles.certification} aria-labelledby="certification-heading">
+        <p>05 — {t('certification')}</p>
+        <h2 id="certification-heading">{t('certificateName')}</h2>
+        <p>German Board for Training and Consulting GmbH · 2026</p>
+      </section>
       <AboutOpportunities />
       <AboutFinalCTA />
     </main>

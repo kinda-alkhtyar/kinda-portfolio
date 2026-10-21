@@ -1,10 +1,13 @@
 import styles from './AboutTechStack.module.css'
+import { useI18n } from '../i18n/locale'
+import LineBreaks from '../i18n/LineBreaks'
+import type { MessageKey } from '../i18n/messages'
 
 const groups = [
-  { title: 'Front-end', skills: 'HTML · CSS · JavaScript · React · Vite', icon: 'screen' },
-  { title: 'Back-end', skills: 'Supabase · REST APIs · Authentication · Databases', icon: 'database' },
-  { title: 'Programming', skills: 'Python', icon: 'pencil' },
-  { title: 'Tools', skills: 'Git · GitHub · VS Code · Figma', icon: 'gear' },
+  { title: 'skillsFrontend', skills: 'HTML5 · CSS3 · JavaScript · React', icon: 'screen' },
+  { title: 'skillsInterfaces', skills: 'skillsInterfaceList', icon: 'database' },
+  { title: 'skillsProgramming', skills: 'Python', icon: 'pencil' },
+  { title: 'skillsTools', skills: 'Git · GitHub · VS Code · Vite', icon: 'gear' },
 ] as const
 
 function StackIcon({ kind }: { kind: typeof groups[number]['icon'] }) {
@@ -19,20 +22,21 @@ function StackIcon({ kind }: { kind: typeof groups[number]['icon'] }) {
 }
 
 export default function AboutTechStack() {
+  const { t } = useI18n()
   return (
     <section className={styles.section} aria-labelledby="stack-heading">
       <div className={styles.header}>
         <div>
-          <p className={styles.label}><span>04</span><span aria-hidden="true">—</span>Skills &amp; technologies</p>
-          <h2 id="stack-heading" className={styles.heading}>Tech Stack</h2>
+          <p className={styles.label}><span>04</span><span aria-hidden="true">—</span>{t('skillsEyebrow')}</p>
+          <h2 id="stack-heading" className={styles.heading}>{t('skillsHeading')}</h2>
         </div>
-        <p className={styles.accent}>Tools that<br />power ideas</p>
+        <p className={styles.accent}><LineBreaks id="skillsAccent" /></p>
       </div>
       <ul className={styles.groups}>
         {groups.map(({ title, skills, icon }) => (
           <li className={styles.group} key={title}>
-            <div className={styles.groupHeading}><StackIcon kind={icon} /><h3>{title}</h3></div>
-            <p>{skills}</p>
+            <div className={styles.groupHeading}><StackIcon kind={icon} /><h3>{t(title as MessageKey)}</h3></div>
+            <p>{skills === 'skillsInterfaceList' ? t('skillsInterfaceList') : skills}</p>
           </li>
         ))}
       </ul>

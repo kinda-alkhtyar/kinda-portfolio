@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
 import styles from './ContactMethods.module.css'
+import { useI18n } from '../i18n/locale'
 
 const methods = [
   { label: 'Email', value: 'alhidyarkinda@gmail.com', href: 'mailto:alhidyarkinda@gmail.com', icon: 'email' },
   { label: 'WhatsApp', value: '+43 681 81368063', href: 'https://wa.me/4368181368063', icon: 'whatsapp' },
   { label: 'Instagram', value: 'kynora.studioo', href: 'https://www.instagram.com/kynora.studioo/', icon: 'instagram' },
   { label: 'GitHub', value: 'github.com/kinda-alkhtyar', href: 'https://github.com/kinda-alkhtyar', icon: 'github' },
+  { label: 'Portfolio', value: 'kinda-portfolio.vercel.app', href: 'https://kinda-portfolio.vercel.app/', icon: 'github' },
 ] as const
 
 function MethodIcon({ kind }: { kind: typeof methods[number]['icon'] }) {
@@ -20,6 +22,7 @@ function MethodIcon({ kind }: { kind: typeof methods[number]['icon'] }) {
 }
 
 export default function ContactMethods() {
+  const { t } = useI18n()
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -64,14 +67,14 @@ export default function ContactMethods() {
   }, [])
 
   return (
-    <section ref={sectionRef} className={styles.section} aria-label="Contact methods">
+    <section ref={sectionRef} className={styles.section} aria-label={t('contactMethods')}>
       <ul className={styles.cards}>
         {methods.map(({ label, value, href, icon }) => (
           <li key={label}>
             <a className={`${styles.card}${icon === 'whatsapp' ? ` ${styles.highlighted}` : ''}`} href={href}>
               <span className={styles.icon}><MethodIcon kind={icon} /></span>
               <span className={styles.details}>
-                <span className={styles.label}>{label}</span>
+                <span className={styles.label}>{label === 'Email' ? t('email') : label === 'Portfolio' ? t('portfolio') : label}</span>
                 <span className={styles.value}>{value}</span>
               </span>
               <svg className={styles.arrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" /></svg>

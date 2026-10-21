@@ -1,6 +1,11 @@
 {
   "routes": [
     { "handle": "filesystem" },
+    { "src": "^/(en|de|tr)$", "dest": "/$1/index.html" },
+    { "src": "^/(en|de|tr)/(about|projects|contact|3d)$", "dest": "/$1/$2/index.html" },
+    { "src": "^/(en|de|tr)/projects/([^/]+)$", "dest": "/$1/projects/$2/index.html" },
+    { "src": "^/(about|projects|contact|3d)$", "dest": "/$1/index.html" },
+    { "src": "^/projects/([^/]+)$", "dest": "/projects/$1/index.html" },
     { "src": "/.*", "dest": "/index.html" }
   ]
 }

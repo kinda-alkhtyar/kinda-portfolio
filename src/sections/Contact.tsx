@@ -5,12 +5,14 @@ import styles from './Contact.module.css'
 import { heroSwordRuntime } from '../components/heroSwordRuntime'
 import sword from '../assets/sword/ka-sword-with-logo.png'
 import pedestal from '../assets/sword/sword-pedestal.png'
+import { useI18n } from '../i18n/locale'
 
 gsap.registerPlugin(ScrollTrigger)
 const Sword3D = lazy(() => import('../components/Sword3D'))
 const swordFallback = <img src={sword} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(0.7)', transformOrigin: 'center' }} />
 
 export default function Contact() {
+  const { t, to, lines } = useI18n()
   const contactRef = useRef<HTMLElement>(null)
   const lightRef = useRef<SVGCircleElement>(null)
 
@@ -80,7 +82,7 @@ export default function Contact() {
           ease: 'sine.inOut',
         }, 0.85)
 
-      const button = section.querySelector<HTMLButtonElement>('button')
+      const button = section.querySelector<HTMLAnchorElement>(`.${styles.button}`)
       const blade = section.querySelector<HTMLElement>(`.${styles.swordImage}`)
       const point = lightRef.current
       if (!button || !blade || !point) return
@@ -143,17 +145,12 @@ export default function Contact() {
         </div>
         <div className={styles.content}>
           <h2 id="contact-title" className={styles.title}>
-            Let’s forge <span>something great</span>
+            {lines('homeContactHeading')[0]} <span>{lines('homeContactHeading')[1]}</span>
           </h2>
-          <p className={styles.subtitle}>Your ideas. My code. A better tomorrow.</p>
-          <button
-            className={styles.button}
-            type="button"
-            disabled
-            aria-label="Start a project — contact details coming soon"
-          >
-            Start a project
-          </button>
+          <p className={styles.subtitle}>{t('homeContactSubtitle')}</p>
+          <a className={styles.button} href={to('/contact')}>
+            {t('startProject')}
+          </a>
         </div>
       </div>
     </section>

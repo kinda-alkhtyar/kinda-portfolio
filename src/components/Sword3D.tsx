@@ -1,6 +1,7 @@
 import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useI18n } from '../i18n/locale'
 import { Bounds, Center, Clone, Environment, Lightformer, Resize, useBounds, useGLTF } from '@react-three/drei'
 import { ACESFilmicToneMapping, Box3, Mesh, MeshStandardMaterial, Quaternion, Scene, Vector3 } from 'three'
 import type { Group, Material } from 'three'
@@ -484,6 +485,7 @@ function SwordModel({ idleRotation, variant, ctaRunning }: { idleRotation: boole
 
 /** Standalone sword viewer with optional desktop idle rotation. */
 export default function Sword3D({ className, style, fallback = null, idleRotation = false, variant = 'hero' }: Sword3DProps) {
+  const { t } = useI18n()
   const [contextLost, setContextLost] = useState(false)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [ctaRunning, setCtaRunning] = useState(false)
@@ -517,7 +519,7 @@ export default function Sword3D({ className, style, fallback = null, idleRotatio
       data-sword-render-surface
       style={{ width: '100%', height: 480, ...style, ...transparentSurface }}
       role="img"
-      aria-label="Royal Flameblade sword in 3D"
+      aria-label={t('swordAria')}
     >
       <SwordRenderBoundary fallback={fallback}>
         {contextLost ? fallback : (

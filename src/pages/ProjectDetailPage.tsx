@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar'
 import { projectDetails } from './projectDetails'
 import styles from './ProjectDetailPage.module.css'
 import { finishProjectTransition, openProject } from './projectTransition'
+import { useI18n } from '../i18n/locale'
+import type { MessageKey } from '../i18n/messages'
 
 const images = import.meta.glob('../assets/case-studies/**/*.{png,jpg,jpeg,webp}', {
   eager: true, query: '?url', import: 'default',
@@ -12,18 +14,26 @@ const images = import.meta.glob('../assets/case-studies/**/*.{png,jpg,jpeg,webp}
 
 gsap.registerPlugin(ScrollTrigger)
 
-const categories: Record<string, string> = {
-  aqarati: 'Real estate platform', 'taaniqi-iman': 'Fashion & e-commerce',
-  'yumna-portfolio': 'Design portfolio', 'fruit-milk': 'Product website',
+const categories: Record<string, MessageKey> = {
+  aqarati: 'caseRealEstate', 'taaniqi-iman': 'caseFashion',
+  'yumna-portfolio': 'caseDesign', 'fruit-milk': 'caseProduct',
+  'personal-portfolio': 'caseInteractive',
+}
+
+const summaries: Record<string, MessageKey> = {
+  aqarati: 'caseAqarati', 'taaniqi-iman': 'caseTaaniqi',
+  'yumna-portfolio': 'caseYumna', 'fruit-milk': 'caseFruit',
+  'personal-portfolio': 'casePersonal',
 }
 
 export default function ProjectDetailPage({ slug }: { slug: string }) {
+  const { t, to } = useI18n()
   const pageRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     const page = pageRef.current
-    if (page) finishProjectTransition(page, page.querySelector(`.${styles.lead} img`), `/projects/${slug}`)
-  }, [slug])
+    if (page) finishProjectTransition(page, page.querySelector(`.${styles.lead} img`), to(`/projects/${slug}`))
+  }, [slug, to])
 
   useLayoutEffect(() => {
     const page = pageRef.current
@@ -75,14 +85,19 @@ export default function ProjectDetailPage({ slug }: { slug: string }) {
   return <div ref={pageRef} className={styles.page}>
     <Navbar currentPage="projects" />
     <main className={styles.content}>
-      <a className={styles.back} href="/projects" onClick={(event) => {
+      <a className={styles.back} href={to('/projects')} onClick={(event) => {
         sessionStorage.setItem('project-transition-return', slug)
-        openProject(event, pageRef.current?.querySelector(`.${styles.lead} img`) ?? null, '/projects')
-      }}>← Back to projects</a>
+        openProject(event, pageRef.current?.querySelector(`.${styles.lead} img`) ?? null, to('/projects'))
+      }}>← {t('caseBack')}</a>
       <header className={styles.heading}>
-        <p className={styles.eyebrow}>Case study / {String(index + 1).padStart(2, '0')}</p>
+        <p className={styles.eyebrow}>{t('caseEyebrow', { number: String(index + 1).padStart(2, '0') })}</p>
         <h1>{titleWords.map((word, wordIndex) => <Fragment key={`${word}-${wordIndex}`}><span className={styles.titleWord}>{word}</span>{wordIndex < titleWords.length - 1 ? ' ' : null}</Fragment>)}</h1>
-        <p className={styles.category}>{categories[slug]} <span>Website</span></p>
+        <p className={styles.category}>{t(categories[slug])} <span>{t('website')}</span></p>
+        <p className={styles.summary}>{t(summaries[slug])}</p>
+        {project.stack && <p className={styles.stack}><strong>{t('builtWith')}</strong> {project.stack.join(' · ')}</p>}
+        {project.liveUrl && <a className={styles.liveLink} href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+          {t('visitLive')} <span aria-hidden="true">↗</span>
+        </a>}
       </header>
       <div className={styles.gallery}>
         {project.images.map((filename, imageIndex) => <figure
@@ -90,15 +105,15 @@ export default function ProjectDetailPage({ slug }: { slug: string }) {
           className={imageIndex === 0 ? styles.lead : imageIndex % 3 === 0 || project.images.length === 2 ? styles.fullWidth : undefined}
         ><img
           src={images[`../assets/case-studies/${slug}/${filename}`]}
-          alt={`${project.title} — project screenshot ${imageIndex + 1}`}
+          alt={t('screenshotAlt', { project: project.title, number: imageIndex + 1 })}
           loading={imageIndex === 0 ? 'eager' : 'lazy'}
           decoding="async"
           onLoad={() => ScrollTrigger.refresh()}
-        /><figcaption>{String(imageIndex + 1).padStart(2, '0')} — {imageIndex === 0 ? 'Overview' : 'Project detail'}</figcaption></figure>)}
+        /><figcaption>{String(imageIndex + 1).padStart(2, '0')} — {t(imageIndex === 0 ? 'overview' : 'projectDetail')}</figcaption></figure>)}
       </div>
-      <nav className={styles.projectNav} aria-label="Project navigation">
-        <a href={`/projects/${previous.slug}`}><span>← Previous project</span><strong>{previous.title}</strong></a>
-        <a href={`/projects/${next.slug}`}><span>Next project →</span><strong>{next.title}</strong></a>
+      <nav className={styles.projectNav} aria-label={t('projectNav')}>
+        <a href={to(`/projects/${previous.slug}`)}><span>← {t('previousProject')}</span><strong>{previous.title}</strong></a>
+        <a href={to(`/projects/${next.slug}`)}><span>{t('nextProject')} →</span><strong>{next.title}</strong></a>
       </nav>
     </main>
   </div>
