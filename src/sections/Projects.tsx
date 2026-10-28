@@ -81,7 +81,7 @@ export default function Projects() {
       <div className={styles.container}>
         <header className={styles.heading}>
           <h2 id="projects-title" className={styles.title}>
-            {lines('homeSelected')[0]} <span>{lines('homeSelected')[1]}</span>
+            {lines('homeSelected')[0]}{' '}<span>{lines('homeSelected')[1]}</span>
           </h2>
           <p className={styles.subtitle}>{t('homeSubtitle')}</p>
         </header>

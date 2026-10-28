@@ -4,7 +4,6 @@ import sword from '../assets/sword/ka-sword-with-logo.png'
 import styles from './Hero.module.css'
 import pedestal from '../assets/sword/sword-pedestal.png'
 import wordmark from '../assets/branding/kinda-wordmark.png'
-import CVDownload from '../components/CVDownload'
 import { useI18n } from '../i18n/locale'
 
 const Sword3D = lazy(() => import('../components/Sword3D'))
@@ -127,7 +126,7 @@ export default function Hero() {
             <img
               className={styles.wordmark}
               src={wordmark}
-              alt="Kinda Alhidyar"
+              alt="Kinda Alkhityar"
               width={1280}
               height={960}
             />
@@ -138,7 +137,7 @@ export default function Hero() {
             <a className={styles.button} href="#projects">
               {t('viewProjects')} <span aria-hidden="true">↗</span>
             </a>
-            <CVDownload />
+
             <a className={`${styles.button} ${styles.secondaryButton}`} href={to('/contact')}>
               {t('contactMe')}
             </a>

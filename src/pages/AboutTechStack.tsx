@@ -4,10 +4,10 @@ import LineBreaks from '../i18n/LineBreaks'
 import type { MessageKey } from '../i18n/messages'
 
 const groups = [
-  { title: 'skillsFrontend', skills: 'HTML5 · CSS3 · JavaScript · React', icon: 'screen' },
-  { title: 'skillsInterfaces', skills: 'skillsInterfaceList', icon: 'database' },
-  { title: 'skillsProgramming', skills: 'Python', icon: 'pencil' },
-  { title: 'skillsTools', skills: 'Git · GitHub · VS Code · Vite', icon: 'gear' },
+  { title: 'skillsFrontend', skills: 'React · TypeScript · JavaScript · HTML5 · CSS3 · Tailwind CSS · Vite · React Router', icon: 'screen' },
+  { title: 'skillsInterfaces', skills: 'Node.js · Express · Python · Django · Flask · REST APIs · PostgreSQL · Prisma · SQLite · SQL', icon: 'database' },
+  { title: 'skillsProgramming', skills: 'skillsInterfaceList', icon: 'pencil' },
+  { title: 'skillsTools', skills: 'Git · GitHub · Figma · VS Code', icon: 'gear' },
 ] as const
 
 function StackIcon({ kind }: { kind: typeof groups[number]['icon'] }) {
@@ -36,7 +36,7 @@ export default function AboutTechStack() {
         {groups.map(({ title, skills, icon }) => (
           <li className={styles.group} key={title}>
             <div className={styles.groupHeading}><StackIcon kind={icon} /><h3>{t(title as MessageKey)}</h3></div>
-            <p>{skills === 'skillsInterfaceList' ? t('skillsInterfaceList') : skills}</p>
+            <p>{skills === 'skillsInterfaceList' ? t('skillsInterfaceList') : skills}{title === 'skillsTools' && <> · {t('skillsQualityList')}</>}</p>
           </li>
         ))}
       </ul>

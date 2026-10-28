@@ -6,7 +6,6 @@ import AboutBring from './AboutBring'
 import AboutTechStack from './AboutTechStack'
 import AboutOpportunities from './AboutOpportunities'
 import AboutFinalCTA from './AboutFinalCTA'
-import CVDownload from '../components/CVDownload'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { useI18n } from '../i18n/locale'
 import LineBreaks from '../i18n/LineBreaks'
@@ -67,7 +66,7 @@ export default function AboutPage() {
           </div>
           <div className={styles.actions}>
             <a className={styles.secondaryButton} href={to('/projects')}>{t('aboutExplore')} <span aria-hidden="true">→</span></a>
-            <CVDownload labelKey="aboutCvDownload" />
+
           </div>
           <p className={styles.motto}><LineBreaks id="aboutMotto" /></p>
         </div>

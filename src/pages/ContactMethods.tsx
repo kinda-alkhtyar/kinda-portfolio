@@ -4,7 +4,7 @@ import { useI18n } from '../i18n/locale'
 
 const methods = [
   { label: 'Email', value: 'alhidyarkinda@gmail.com', href: 'mailto:alhidyarkinda@gmail.com', icon: 'email' },
-  { label: 'WhatsApp', value: '+43 681 81368063', href: 'https://wa.me/4368181368063', icon: 'whatsapp' },
+  { label: 'WhatsApp', value: '+43 677 62114960', href: 'https://wa.me/4367762114960', icon: 'whatsapp' },
   { label: 'Instagram', value: 'kynora.studioo', href: 'https://www.instagram.com/kynora.studioo/', icon: 'instagram' },
   { label: 'GitHub', value: 'github.com/kinda-alkhtyar', href: 'https://github.com/kinda-alkhtyar', icon: 'github' },
   { label: 'Portfolio', value: 'kinda-portfolio.vercel.app', href: 'https://kinda-portfolio.vercel.app/', icon: 'github' },

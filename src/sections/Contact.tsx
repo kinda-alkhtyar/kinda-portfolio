@@ -145,7 +145,7 @@ export default function Contact() {
         </div>
         <div className={styles.content}>
           <h2 id="contact-title" className={styles.title}>
-            {lines('homeContactHeading')[0]} <span>{lines('homeContactHeading')[1]}</span>
+            {lines('homeContactHeading')[0]}{' '}<span>{lines('homeContactHeading')[1]}</span>
           </h2>
           <p className={styles.subtitle}>{t('homeContactSubtitle')}</p>
           <a className={styles.button} href={to('/contact')}>
